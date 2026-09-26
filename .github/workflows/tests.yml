@@ -1,0 +1,25 @@
+name: Client tests and distributions
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ['3.11', '3.12', '3.13']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m unittest discover -s tests -v
+      - run: python scripts/build_docs.py
+      - run: git diff --exit-code -- docs
+      - run: python -m pip install build
+      - run: python -m build
+      - run: python scripts/build_mcpb.py
+      - run: python -m pip install dist/*.whl
+      - run: guardmarket-mcp --version

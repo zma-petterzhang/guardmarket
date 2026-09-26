@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "guardmarket-mcp"
+version = "0.3.0"
+description = "GuardMarket MCP client: discover 125 commerce and data skills, inspect schemas, invoke with explicit spending limits"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{name = "GuardMarket contributors"}]
+keywords = ["mcp", "skills", "ecommerce", "claude", "qwen", "codex"]
+dependencies = []
+classifiers = ["Programming Language :: Python :: 3", "Operating System :: OS Independent"]
+
+[project.urls]
+Homepage = "https://zma-petterzhang.github.io/guardmarket/"
+Repository = "https://github.com/zma-petterzhang/guardmarket"
+Issues = "https://github.com/zma-petterzhang/guardmarket/issues"
+
+[project.scripts]
+guardmarket-mcp = "guardmarket_mcp.client:main"
+
+[tool.setuptools.packages.find]
+include = ["guardmarket_mcp*"]

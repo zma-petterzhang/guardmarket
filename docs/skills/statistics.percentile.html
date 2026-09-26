@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>百分位数 / statistics.percentile · GuardMarket</title><meta name="description" content="Compute a percentile by linear interpolation at (n-1) × p/100.">
+<link rel="canonical" href="https://zma-petterzhang.github.io/guardmarket/skills/statistics.percentile.html"><meta property="og:title" content="百分位数 / statistics.percentile"><meta property="og:description" content="Compute a percentile by linear interpolation at (n-1) × p/100."><meta property="og:type" content="website"><meta property="og:url" content="https://zma-petterzhang.github.io/guardmarket/skills/statistics.percentile.html">
+<meta name="theme-color" content="#102920"><link rel="icon" type="image/svg+xml" href="/guardmarket/assets/logo.svg"><link rel="stylesheet" href="/guardmarket/assets/site.css"><script type="application/ld+json">{"@context": "https://schema.org", "@type": "TechArticle", "headline": "百分位数 — statistics.percentile", "description": "Compute a percentile by linear interpolation at (n-1) × p/100.", "url": "https://zma-petterzhang.github.io/guardmarket/skills/statistics.percentile.html", "inLanguage": ["zh-CN", "en"], "version": "1.0.0", "about": {"@type": "SoftwareApplication", "name": "GuardMarket", "applicationCategory": "DeveloperApplication", "operatingSystem": "Python 3.11+"}}</script>
+</head><body><header><a class="brand" href="/guardmarket/"><img src="/guardmarket/assets/logo.svg" width="32" height="32" alt="">GuardMarket</a><nav aria-label="Main"><a href="/guardmarket/#catalog">技能目录</a><a href="/guardmarket/connect.html">接入指南</a><a href="/guardmarket/use-cases.html">实际用例</a><a href="https://github.com/zma-petterzhang/guardmarket">GitHub ↗</a></nav></header><main><div class="breadcrumbs"><a href="/guardmarket/">目录 Catalog</a> / 统计 Statistics</div><section class="detail-head"><p class="eyebrow">statistics.percentile</p><h1>百分位数</h1><p class="lead">Compute a percentile by linear interpolation at (n-1) × p/100.</p><div class="pills"><span>Version 1.0.0</span><span>确定性数据处理</span><span>Backend required</span></div></section>
+<div class="detail-grid"><article><h2>使用场景 / Purpose</h2><p>Statistics: percentile. 本技能对提供的参数执行计算，输入输出契约如下。文档例子来自已实现函数的固定验收样例；网页本身不执行代码。</p><h2>输入字段 / Parameters</h2><div class="table-wrap"><table><thead><tr><th>字段</th><th>类型</th><th>要求</th><th>约束与说明</th></tr></thead><tbody><tr><td><code>values</code></td><td>&quot;array&quot;</td><td>必填 Required</td><td><code>{&quot;items&quot;: {&quot;type&quot;: &quot;number&quot;, &quot;minimum&quot;: -1000000000000.0, &quot;maximum&quot;: 1000000000000.0}, &quot;minItems&quot;: 1, &quot;maxItems&quot;: 1000}</code></td></tr><tr><td><code>percentile</code></td><td>&quot;number&quot;</td><td>必填 Required</td><td><code>{&quot;minimum&quot;: 0, &quot;maximum&quot;: 100}</code></td></tr></tbody></table></div><h2>输入例子 / Example input</h2><pre><code>{
+  &quot;values&quot;: [
+    0,
+    10,
+    20,
+    30
+  ],
+  &quot;percentile&quot;: 25
+}</code></pre><h2>预期输出 / Expected output</h2><pre><code>7.5</code></pre><details><summary>完整输入 JSON Schema</summary><pre><code>{
+  &quot;type&quot;: &quot;object&quot;,
+  &quot;properties&quot;: {
+    &quot;values&quot;: {
+      &quot;type&quot;: &quot;array&quot;,
+      &quot;items&quot;: {
+        &quot;type&quot;: &quot;number&quot;,
+        &quot;minimum&quot;: -1000000000000.0,
+        &quot;maximum&quot;: 1000000000000.0
+      },
+      &quot;minItems&quot;: 1,
+      &quot;maxItems&quot;: 1000
+    },
+    &quot;percentile&quot;: {
+      &quot;type&quot;: &quot;number&quot;,
+      &quot;minimum&quot;: 0,
+      &quot;maximum&quot;: 100
+    }
+  },
+  &quot;required&quot;: [
+    &quot;values&quot;,
+    &quot;percentile&quot;
+  ],
+  &quot;additionalProperties&quot;: false,
+  &quot;maxProperties&quot;: 1000
+}</code></pre></details><details><summary>完整输出 JSON Schema</summary><pre><code>{
+  &quot;type&quot;: &quot;number&quot;,
+  &quot;minimum&quot;: -1e+100,
+  &quot;maximum&quot;: 1e+100
+}</code></pre></details></article>
+<aside><h2>调用约定</h2><p>先用 <code>market.search</code> 查找 <code>statistics.percentile</code>，再用 <code>market.describe</code> 获取后台返回的准确 ID、版本与价格。</p><p><strong>示例价格 ¥0.01 / 成功调用</strong><br>10,000 micros，仅为演示。实际币种、价格和测试/生产模式由后台返回。</p><p><code>effects: pure</code> 描述函数本身不进行外部读写；通过市场调用仍可能扣减钱包。</p><p>所有输入来自调用方；不自动查询实时数据。以本页 schema 和实时清单共同确定输入约束。</p><a class="button" href="/guardmarket/connect.html">接入并调用 →</a></aside></div></main><footer><div><strong>GuardMarket</strong><p>Open client. Explicit schemas. Metered execution.</p></div><div><a href="/guardmarket/privacy.html">数据与隐私</a><a href="/guardmarket/terms.html">使用说明</a><a href="/guardmarket/llms.txt">LLM 索引</a><a href="https://github.com/zma-petterzhang/guardmarket/issues">反馈与支持</a></div><p>文档和示例不等于实时调用。实际能力、价格与可用性以所连接的后台为准。<br>Public documentation does not imply a hosted backend or vendor directory approval.</p></footer><script src="/guardmarket/assets/site.js" defer></script></body></html>

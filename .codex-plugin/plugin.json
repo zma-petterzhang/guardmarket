@@ -1,0 +1,29 @@
+{
+  "name": "guardmarket",
+  "version": "0.3.0",
+  "description": "Discover commerce and data skills, inspect schemas and prices, and invoke with explicit spending limits. Requires an independently running GuardMarket backend.",
+  "author": {
+    "name": "GuardMarket contributors",
+    "url": "https://github.com/zma-petterzhang/guardmarket"
+  },
+  "homepage": "https://zma-petterzhang.github.io/guardmarket/",
+  "repository": "https://github.com/zma-petterzhang/guardmarket",
+  "license": "MIT",
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "GuardMarket",
+    "shortDescription": "Commerce and data skills",
+    "longDescription": "Connect to your GuardMarket backend to discover versioned commerce and data skills, inspect schemas and prices, and invoke within a spending cap. Discovery is anonymous; execution and account queries use your consumer credential.",
+    "developerName": "GuardMarket contributors",
+    "category": "Productivity",
+    "capabilities": [],
+    "websiteURL": "https://zma-petterzhang.github.io/guardmarket/",
+    "privacyPolicyURL": "https://zma-petterzhang.github.io/guardmarket/privacy.html",
+    "termsOfServiceURL": "https://zma-petterzhang.github.io/guardmarket/terms.html",
+    "defaultPrompt": "Find a skill to calculate a cart total and show its input schema and price.",
+    "brandColor": "#155D42",
+    "logo": "./assets/logo.svg",
+    "composerIcon": "./assets/logo.svg"
+  }
+}

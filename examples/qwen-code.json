@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "guardmarket": {
+      "command": "/ABSOLUTE/PATH/TO/.venv/bin/guardmarket-mcp",
+      "args": [],
+      "env": {
+        "GUARDMARKET_URL": "${GUARDMARKET_URL}"
+      },
+      "trust": false,
+      "timeout": 60000
+    }
+  }
+}

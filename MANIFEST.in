@@ -1,0 +1,10 @@
+include LICENSE README.md README.zh-CN.md SECURITY.md AGENTS.md CLAUDE.md VALIDATION.md
+include plugin.json mcp.json .mcp.json
+include .codex-plugin/plugin.json .claude-plugin/plugin.json
+recursive-include catalog *.json
+recursive-include examples *.json *.toml *.py *.md
+recursive-include scripts *.py
+recursive-include mcpb *.json *.py
+recursive-include assets *.svg *.css *.js
+recursive-include skills *.md
+recursive-include docs *.html *.json *.css *.js *.svg *.xml *.txt

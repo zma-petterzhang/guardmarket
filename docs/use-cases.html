@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>完整用例 / Worked examples · GuardMarket</title><meta name="description" content="Three reproducible examples for cart totals, CSV formula escaping, and inventory reorder calculations.">
+<link rel="canonical" href="https://zma-petterzhang.github.io/guardmarket/use-cases.html"><meta property="og:title" content="完整用例 / Worked examples"><meta property="og:description" content="Three reproducible examples for cart totals, CSV formula escaping, and inventory reorder calculations."><meta property="og:type" content="website"><meta property="og:url" content="https://zma-petterzhang.github.io/guardmarket/use-cases.html">
+<meta name="theme-color" content="#102920"><link rel="icon" type="image/svg+xml" href="/guardmarket/assets/logo.svg"><link rel="stylesheet" href="/guardmarket/assets/site.css"><script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebPage", "name": "完整用例 / Worked examples", "description": "Three reproducible examples for cart totals, CSV formula escaping, and inventory reorder calculations.", "url": "https://zma-petterzhang.github.io/guardmarket/use-cases.html", "inLanguage": ["zh-CN", "en"]}</script>
+</head><body><header><a class="brand" href="/guardmarket/"><img src="/guardmarket/assets/logo.svg" width="32" height="32" alt="">GuardMarket</a><nav aria-label="Main"><a href="/guardmarket/#catalog">技能目录</a><a href="/guardmarket/connect.html">接入指南</a><a href="/guardmarket/use-cases.html">实际用例</a><a href="https://github.com/zma-petterzhang/guardmarket">GitHub ↗</a></nav></header><main><section class="detail-head"><p class="eyebrow">WORKED EXAMPLES</p><h1>从输入到结果，一眼看清。</h1><p class="lead">这些是固定验收样例。要取得本次真实执行结果，请连接后台并保留调用回执。</p></section><article class="prose"><section><p class="eyebrow">commerce.cart_total</p><h2>购物车结算 / Cart total</h2><p>将购物清单、优惠百分比、税率和运费作为输入，获得可复核的结算金额。税率来自调用方。</p><h3>输入</h3><pre><code>{
+  &quot;items&quot;: [
+    {
+      &quot;sku&quot;: &quot;A&quot;,
+      &quot;unit_price&quot;: &quot;10.00&quot;,
+      &quot;quantity&quot;: 2
+    }
+  ],
+  &quot;discount_percent&quot;: 10,
+  &quot;tax_percent&quot;: 5,
+  &quot;shipping&quot;: &quot;3.00&quot;
+}</code></pre><h3>预期输出</h3><pre><code>{
+  &quot;lines&quot;: [
+    {
+      &quot;sku&quot;: &quot;A&quot;,
+      &quot;quantity&quot;: 2,
+      &quot;line_total&quot;: &quot;20.00&quot;
+    }
+  ],
+  &quot;subtotal&quot;: &quot;20.00&quot;,
+  &quot;discount&quot;: &quot;2.00&quot;,
+  &quot;taxable&quot;: &quot;18.00&quot;,
+  &quot;tax&quot;: &quot;0.90&quot;,
+  &quot;shipping&quot;: &quot;3.00&quot;,
+  &quot;total&quot;: &quot;21.90&quot;
+}</code></pre><p><a href="/guardmarket/skills/commerce.cart_total.html">完整参数契约 →</a></p></section><section><p class="eyebrow">csv.escape_formulas</p><h2>导出前处理 CSV / Spreadsheet-safe export</h2><p>对用户提供的 CSV 数据执行公式转义。检查返回内容后再交给电子表格；该技能不读取或上传本机文件。</p><h3>输入</h3><pre><code>{
+  &quot;rows&quot;: [
+    [
+      &quot;name&quot;,
+      &quot;value&quot;
+    ],
+    [
+      &quot;item&quot;,
+      &quot;=1+1&quot;
+    ]
+  ]
+}</code></pre><h3>预期输出</h3><pre><code>[
+  [
+    &quot;name&quot;,
+    &quot;value&quot;
+  ],
+  [
+    &quot;item&quot;,
+    &quot;&#x27;=1+1&quot;
+  ]
+]</code></pre><p><a href="/guardmarket/skills/csv.escape_formulas.html">完整参数契约 →</a></p></section><section><p class="eyebrow">inventory.reorder_point</p><h2>库存补货规划 / Reorder point</h2><p>根据提供的需求与交付时间数据计算补货阈值。计算不会修改店铺库存或自动采购。</p><h3>输入</h3><pre><code>{
+  &quot;on_hand&quot;: 20,
+  &quot;on_order&quot;: 0,
+  &quot;reserved&quot;: 5,
+  &quot;daily_demand&quot;: 4,
+  &quot;lead_days&quot;: 5,
+  &quot;safety_stock&quot;: 10
+}</code></pre><h3>预期输出</h3><pre><code>{
+  &quot;reorder_point&quot;: 30,
+  &quot;inventory_position&quot;: 15,
+  &quot;reorder_needed&quot;: true,
+  &quot;suggested_quantity&quot;: 15
+}</code></pre><p><a href="/guardmarket/skills/inventory.reorder_point.html">完整参数契约 →</a></p></section></article></main><footer><div><strong>GuardMarket</strong><p>Open client. Explicit schemas. Metered execution.</p></div><div><a href="/guardmarket/privacy.html">数据与隐私</a><a href="/guardmarket/terms.html">使用说明</a><a href="/guardmarket/llms.txt">LLM 索引</a><a href="https://github.com/zma-petterzhang/guardmarket/issues">反馈与支持</a></div><p>文档和示例不等于实时调用。实际能力、价格与可用性以所连接的后台为准。<br>Public documentation does not imply a hosted backend or vendor directory approval.</p></footer><script src="/guardmarket/assets/site.js" defer></script></body></html>

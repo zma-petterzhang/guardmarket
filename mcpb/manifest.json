@@ -1,0 +1,63 @@
+{
+  "$schema": "https://raw.githubusercontent.com/modelcontextprotocol/mcpb/main/schemas/mcpb-manifest-v0.4.schema.json",
+  "manifest_version": "0.4",
+  "name": "guardmarket",
+  "display_name": "GuardMarket",
+  "version": "0.3.0",
+  "description": "Discover commerce and data skills, inspect schemas and prices, and invoke with spending limits.",
+  "long_description": "A local MCP client for an independently operated GuardMarket backend. Search and describe are anonymous; invocation, wallet, and receipt tools require your consumer API key. Installing this bundle does not deploy a backend, create an account, or grant a wallet balance. The configured backend determines availability, currency, prices, and test/production mode.",
+  "author": {
+    "name": "GuardMarket contributors",
+    "url": "https://github.com/zma-petterzhang/guardmarket"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zma-petterzhang/guardmarket.git"
+  },
+  "homepage": "https://zma-petterzhang.github.io/guardmarket/",
+  "documentation": "https://zma-petterzhang.github.io/guardmarket/connect.html",
+  "support": "https://github.com/zma-petterzhang/guardmarket/issues",
+  "server": {
+    "type": "uv",
+    "entry_point": "server.py",
+    "mcp_config": {
+      "command": "uv",
+      "args": ["run", "--directory", "${__dirname}", "server.py"],
+      "env": {
+        "GUARDMARKET_URL": "${user_config.market_url}",
+        "GUARDMARKET_API_KEY": "${user_config.api_key}"
+      }
+    }
+  },
+  "compatibility": {
+    "platforms": ["darwin", "linux", "win32"],
+    "runtimes": {"python": ">=3.11"}
+  },
+  "user_config": {
+    "market_url": {
+      "type": "string",
+      "title": "GuardMarket backend URL",
+      "description": "Origin of your existing backend. Use HTTPS, or numeric loopback HTTP for local development. The documentation website is not a backend.",
+      "required": true,
+      "default": "http://127.0.0.1:8787"
+    },
+    "api_key": {
+      "type": "string",
+      "title": "Consumer API key (optional)",
+      "description": "Leave blank for anonymous search and description. Obtain a consumer key from your backend for invocation, wallet and receipts; do not use administrator credentials.",
+      "required": false,
+      "sensitive": true,
+      "default": ""
+    }
+  },
+  "tools": [
+    {"name": "market.search", "description": "Search published skill names, categories and per-call prices."},
+    {"name": "market.describe", "description": "Inspect a skill's version, schemas, examples, effects and price."},
+    {"name": "market.invoke", "description": "Invoke within an explicit price cap and retain the idempotency key."},
+    {"name": "market.wallet", "description": "Read available and reserved wallet balances."},
+    {"name": "market.receipt", "description": "Read an owned invocation's result and billing state."}
+  ],
+  "keywords": ["mcp", "commerce", "data", "skills", "guardmarket"],
+  "license": "MIT",
+  "privacy_policies": ["https://zma-petterzhang.github.io/guardmarket/privacy.html"]
+}

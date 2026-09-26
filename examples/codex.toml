@@ -1,0 +1,9 @@
+[mcp_servers.guardmarket]
+command = "/ABSOLUTE/PATH/TO/.venv/bin/guardmarket-mcp"
+args = ["--url", "http://127.0.0.1:8787"]
+env_vars = ["GUARDMARKET_API_KEY"]
+startup_timeout_sec = 20
+tool_timeout_sec = 120
+
+# Replace command and URL. Supply the consumer key in the launcher environment.
+# Do not write a real credential in a committed TOML file.

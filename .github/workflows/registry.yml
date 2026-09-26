@@ -1,0 +1,46 @@
+name: Publish released MCPB to MCP Registry
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Existing public final release version, without v'
+        required: true
+        default: '0.3.0'
+        type: string
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: mcp-registry-publication
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.repository == 'zma-petterzhang/guardmarket' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_VERSION: ${{ inputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify public release and generate registry metadata
+        run: python scripts/prepare_mcpb_registry.py --version "$RELEASE_VERSION" --output server.json
+      - name: Install checksum-pinned official publisher
+        run: |
+          curl --fail --location --proto '=https' --tlsv1.2 --retry 3 --output publisher.tar.gz https://github.com/modelcontextprotocol/registry/releases/download/v1.8.1/mcp-publisher_linux_amd64.tar.gz
+          echo 'a06c9096dcb9727c13555b6be26c7effa707b01f06a4c561ba7a3635443cf2cc  publisher.tar.gz' | sha256sum --check --strict
+          tar xzf publisher.tar.gz mcp-publisher
+      - name: Authenticate using this repository's GitHub OIDC identity
+        run: ./mcp-publisher login github-oidc
+      - name: Publish exact release metadata
+        run: ./mcp-publisher publish
+      - name: Verify published namespace version and hash
+        run: python scripts/prepare_mcpb_registry.py --verify-published server.json
+      - name: Save public publication evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcp-registry-metadata
+          path: server.json
+          if-no-files-found: ignore

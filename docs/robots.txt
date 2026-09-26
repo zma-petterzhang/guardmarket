@@ -1,0 +1,4 @@
+# Project-level reference. Crawlers use the origin /robots.txt, which GitHub controls.
+User-agent: *
+Allow: /guardmarket/
+Sitemap: https://zma-petterzhang.github.io/guardmarket/sitemap.xml

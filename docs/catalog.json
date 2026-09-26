@@ -1,0 +1,6947 @@
+{
+  "catalog_version": "1.0.0",
+  "skill_count": 125,
+  "source": "GuardMarket builtin metadata; implementations run in a separately operated backend.",
+  "example_price_micros": 10000,
+  "micros_per_currency_unit": 1000000,
+  "pricing_note": "Example only: actual currency, mode, and per-skill prices are returned by the chosen backend. No public hosted backend is included.",
+  "skills": [
+    {
+      "name": "commerce.break_even",
+      "version": "1.0.0",
+      "title": "保本销量",
+      "description": "Calculate the smallest integer unit count covering fixed costs from positive unit contribution.",
+      "category": "commerce",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "fixed_cost": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "unit_price": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "variable_cost": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32
+          }
+        },
+        "required": [
+          "fixed_cost",
+          "unit_price",
+          "variable_cost"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "units": {
+            "type": "number",
+            "minimum": -1e+100,
+            "maximum": 1e+100
+          },
+          "revenue": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 128000
+          }
+        },
+        "required": [
+          "units",
+          "revenue"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "example_input": {
+        "fixed_cost": "1000.00",
+        "unit_price": "30.00",
+        "variable_cost": "10.00"
+      },
+      "example_output": {
+        "units": 50,
+        "revenue": "1500.00"
+      }
+    },
+    {
+      "name": "commerce.cart_total",
+      "version": "1.0.0",
+      "title": "购物车金额汇总",
+      "description": "Round each line to cents, apply one order discount, tax discounted items and add untaxed shipping; caller supplies the rate.",
+      "category": "commerce",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "sku": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "unit_price": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 32
+                },
+                "quantity": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 10000
+                }
+              },
+              "required": [
+                "sku",
+                "unit_price",
+                "quantity"
+              ],
+              "additionalProperties": false,
+              "maxProperties": 1000
+            },
+            "minItems": 1,
+            "maxItems": 200
+          },
+          "discount_percent": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "tax_percent": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "shipping": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32
+          }
+        },
+        "required": [
+          "items",
+          "discount_percent",
+          "tax_percent",
+          "shipping"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "lines": {
+            "type": "array",
+            "items": {
+              "type": [
+                "object",
+                "array",
+                "string",
+                "number",
+                "boolean",
+                "null"
+              ],
+              "maxProperties": 1000,
+              "maxItems": 1000,
+              "maxLength": 60000,
+              "minimum": -1e+100,
+              "maximum": 1e+100
+            },
+            "minItems": 0,
+            "maxItems": 10000
+          },
+          "subtotal": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 128000
+          },
+          "discount": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 128000
+          },
+          "taxable": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 128000
+          },
+          "tax": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 128000
+          },
+          "shipping": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 128000
+          },
+          "total": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 128000
+          }
+        },
+        "required": [
+          "lines",
+          "subtotal",
+          "discount",
+          "taxable",
+          "tax",
+          "shipping",
+          "total"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "example_input": {
+        "items": [
+          {
+            "sku": "A",
+            "unit_price": "10.00",
+            "quantity": 2
+          }
+        ],
+        "discount_percent": 10,
+        "tax_percent": 5,
+        "shipping": "3.00"
+      },
+      "example_output": {
+        "lines": [
+          {
+            "sku": "A",
+            "quantity": 2,
+            "line_total": "20.00"
+          }
+        ],
+        "subtotal": "20.00",
+        "discount": "2.00",
+        "taxable": "18.00",
+        "tax": "0.90",
+        "shipping": "3.00",
+        "total": "21.90"
+      }
+    },
+    {
+      "name": "commerce.commission_split",
+      "version": "1.0.0",
+      "title": "平台与开发者分成",
+      "description": "Split a cent-rounded gross amount; round the platform share half-up and give the exact remainder to the developer.",
+      "category": "commerce",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "platform_percent": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          }
+        },
+        "required": [
+          "amount",
+          "platform_percent"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "gross": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 128000
+          },
+          "platform": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 128000
+          },
+          "developer": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 128000
+          }
+        },
+        "required": [
+          "gross",
+          "platform",
+          "developer"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "example_input": {
+        "amount": "10.01",
+        "platform_percent": 20
+      },
+      "example_output": {
+        "gross": "10.01",
+        "platform": "2.00",
+        "developer": "8.01"
+      }
+    },
+    {
+      "name": "commerce.compare_offers",
+      "version": "1.0.0",
+      "title": "比较采购报价",
+      "description": "Sort named offers by unrounded unit price and then name; display rounded unit prices.",
+      "category": "commerce",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "offers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                },
+                "total_price": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 32
+                },
+                "quantity": {
+                  "type": "number",
+                  "minimum": 1e-06,
+                  "maximum": 1000000
+                }
+              },
+              "required": [
+                "name",
+                "total_price",
+                "quantity"
+              ],
+              "additionalProperties": false,
+              "maxProperties": 1000
+            },
+            "minItems": 1,
+            "maxItems": 200
+          }
+        },
+        "required": [
+          "offers"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "array",
+        "items": {
+          "type": [
+            "object",
+            "array",
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
+          "maxProperties": 1000,
+          "maxItems": 1000,
+          "maxLength": 60000,
+          "minimum": -1e+100,
+          "maximum": 1e+100
+        },
+        "minItems": 0,
+        "maxItems": 10000
+      },
+      "example_input": {
+        "offers": [
+          {
+            "name": "Pack A",
+            "total_price": "10.00",
+            "quantity": 2
+          },
+          {
+            "name": "Pack B",
+            "total_price": "12.00",
+            "quantity": 3
+          }
+        ]
+      },
+      "example_output": [
+        {
+          "name": "Pack B",
+          "unit_price": "4.00"
+        },
+        {
+          "name": "Pack A",
+          "unit_price": "5.00"
+        }
+      ]
+    },
+    {
+      "name": "commerce.currency_convert",
+      "version": "1.0.0",
+      "title": "按指定汇率换算",
+      "description": "Multiply a nonnegative amount by the caller's plain-decimal exchange rate; no live exchange-rate lookup.",
+      "category": "commerce",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "rate": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32
+          }
+        },
+        "required": [
+          "amount",
+          "rate"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 128000
+      },
+      "example_input": {
+        "amount": "100.00",
+        "rate": "7.25"
+      },
+      "example_output": "725.00"
+    },
+    {
+      "name": "commerce.discount",
+      "version": "1.0.0",
+      "title": "折扣价格",
+      "description": "Round the original price to cents, then calculate a percentage discount and final price; discount rounds half-up to cents.",
+      "category": "commerce",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "price": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "percent": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          }
+        },
+        "required": [
+          "price",
+          "percent"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "original": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 128000
+          },
+          "discount": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 128000
+          },
+          "final": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 128000
+          }
+        },
+        "required": [
+          "original",
+          "discount",
+          "final"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "example_input": {
+        "price": "99.90",
+        "percent": 20
+      },
+      "example_output": {
+        "original": "99.90",
+        "discount": "19.98",
+        "final": "79.92"
+      }
+    },
+    {
+      "name": "commerce.margin",
+      "version": "1.0.0",
+      "title": "毛利与毛利率",
+      "description": "Calculate gross profit and gross margin as a percentage of selling price.",
+      "category": "commerce",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "cost": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "price": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32
+          }
+        },
+        "required": [
+          "cost",
+          "price"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "profit": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 128000
+          },
+          "margin_percent": {
+            "type": "number",
+            "minimum": -1e+100,
+            "maximum": 1e+100
+          }
+        },
+        "required": [
+          "profit",
+          "margin_percent"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "example_input": {
+        "cost": "60.00",
+        "price": "100.00"
+      },
+      "example_output": {
+        "profit": "40.00",
+        "margin_percent": 40.0
+      }
+    },
+    {
+      "name": "commerce.markup",
+      "version": "1.0.0",
+      "title": "成本加成定价",
+      "description": "Calculate markup as a percentage of cost and return the resulting price.",
+      "category": "commerce",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "cost": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "percent": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10000
+          }
+        },
+        "required": [
+          "cost",
+          "percent"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "cost": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 128000
+          },
+          "markup": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 128000
+          },
+          "price": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 128000
+          }
+        },
+        "required": [
+          "cost",
+          "markup",
+          "price"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "example_input": {
+        "cost": "60.00",
+        "percent": 25
+      },
+      "example_output": {
+        "cost": "60.00",
+        "markup": "15.00",
+        "price": "75.00"
+      }
+    },
+    {
+      "name": "commerce.price_from_margin",
+      "version": "1.0.0",
+      "title": "按毛利率定价",
+      "description": "Compute cost / (1 - margin/100), rounding the proposed price to cents.",
+      "category": "commerce",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "cost": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "margin_percent": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 99.99
+          }
+        },
+        "required": [
+          "cost",
+          "margin_percent"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 128000
+      },
+      "example_input": {
+        "cost": "60.00",
+        "margin_percent": 25
+      },
+      "example_output": "80.00"
+    },
+    {
+      "name": "commerce.price_to_increment",
+      "version": "1.0.0",
+      "title": "按价格步长取整",
+      "description": "Round a nonnegative price up to the nearest positive increment of whole cents.",
+      "category": "commerce",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "price": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "increment": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32
+          }
+        },
+        "required": [
+          "price",
+          "increment"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 128000
+      },
+      "example_input": {
+        "price": "10.12",
+        "increment": "0.50"
+      },
+      "example_output": "10.50"
+    },
+    {
+      "name": "commerce.product_completeness",
+      "version": "1.0.0",
+      "title": "检查商品资料完整性",
+      "description": "Report missing, null, empty-string or empty-list fields against caller-specified required product keys.",
+      "category": "commerce",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "product": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": {
+              "type": [
+                "object",
+                "array",
+                "string",
+                "number",
+                "boolean",
+                "null"
+              ],
+              "maxProperties": 1000,
+              "maxItems": 1000,
+              "maxLength": 60000,
+              "minimum": -1e+100,
+              "maximum": 1e+100
+            },
+            "maxProperties": 1000
+          },
+          "required_fields": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "minItems": 0,
+            "maxItems": 100
+          }
+        },
+        "required": [
+          "product",
+          "required_fields"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "missing": {
+            "type": "array",
+            "items": {
+              "type": [
+                "object",
+                "array",
+                "string",
+                "number",
+                "boolean",
+                "null"
+              ],
+              "maxProperties": 1000,
+              "maxItems": 1000,
+              "maxLength": 60000,
+              "minimum": -1e+100,
+              "maximum": 1e+100
+            },
+            "minItems": 0,
+            "maxItems": 10000
+          },
+          "complete_percent": {
+            "type": "number",
+            "minimum": -1e+100,
+            "maximum": 1e+100
+          }
+        },
+        "required": [
+          "missing",
+          "complete_percent"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "example_input": {
+        "product": {
+          "sku": "A",
+          "title": ""
+        },
+        "required_fields": [
+          "sku",
+          "title",
+          "price"
+        ]
+      },
+      "example_output": {
+        "missing": [
+          "title",
+          "price"
+        ],
+        "complete_percent": 33.33333333333333
+      }
+    },
+    {
+      "name": "commerce.sku_generate",
+      "version": "1.0.0",
+      "title": "生成商品 SKU",
+      "description": "Construct a deterministic uppercase SKU from ASCII alphanumeric segments after accent removal; caller controls uniqueness.",
+      "category": "commerce",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "prefix": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "attributes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32
+            },
+            "minItems": 1,
+            "maxItems": 10
+          }
+        },
+        "required": [
+          "prefix",
+          "attributes"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 128000
+      },
+      "example_input": {
+        "prefix": "shirt",
+        "attributes": [
+          "red",
+          "XL",
+          "2024"
+        ]
+      },
+      "example_output": "SHIRT-RED-XL-2024"
+    },
+    {
+      "name": "commerce.tax",
+      "version": "1.0.0",
+      "title": "价税分离",
+      "description": "Round the supplied amount to cents and calculate tax-exclusive or tax-inclusive amounts from the caller's rate; does not determine applicable tax rules.",
+      "category": "commerce",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "rate_percent": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "inclusive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "amount",
+          "rate_percent",
+          "inclusive"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "net": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 128000
+          },
+          "tax": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 128000
+          },
+          "gross": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 128000
+          }
+        },
+        "required": [
+          "net",
+          "tax",
+          "gross"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "example_input": {
+        "amount": "120.00",
+        "rate_percent": 20,
+        "inclusive": true
+      },
+      "example_output": {
+        "net": "100.00",
+        "tax": "20.00",
+        "gross": "120.00"
+      }
+    },
+    {
+      "name": "commerce.tiered_pricing",
+      "version": "1.0.0",
+      "title": "阶梯用量定价",
+      "description": "Apply graduated pricing to each tier's incremental quantity, rounding each band's cost to cents; final tier must cover quantity.",
+      "category": "commerce",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "quantity": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "tiers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "up_to": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 1000000
+                },
+                "unit_price": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 32
+                }
+              },
+              "required": [
+                "up_to",
+                "unit_price"
+              ],
+              "additionalProperties": false,
+              "maxProperties": 1000
+            },
+            "minItems": 1,
+            "maxItems": 100
+          }
+        },
+        "required": [
+          "quantity",
+          "tiers"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "bands": {
+            "type": "array",
+            "items": {
+              "type": [
+                "object",
+                "array",
+                "string",
+                "number",
+                "boolean",
+                "null"
+              ],
+              "maxProperties": 1000,
+              "maxItems": 1000,
+              "maxLength": 60000,
+              "minimum": -1e+100,
+              "maximum": 1e+100
+            },
+            "minItems": 0,
+            "maxItems": 10000
+          },
+          "total": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 128000
+          }
+        },
+        "required": [
+          "bands",
+          "total"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "example_input": {
+        "quantity": 15,
+        "tiers": [
+          {
+            "up_to": 10,
+            "unit_price": "2.00"
+          },
+          {
+            "up_to": 100,
+            "unit_price": "1.00"
+          }
+        ]
+      },
+      "example_output": {
+        "bands": [
+          {
+            "quantity": 10,
+            "unit_price": "2.00",
+            "cost": "20.00"
+          },
+          {
+            "quantity": 5,
+            "unit_price": "1.00",
+            "cost": "5.00"
+          }
+        ],
+        "total": "25.00"
+      }
+    },
+    {
+      "name": "commerce.unit_price",
+      "version": "1.0.0",
+      "title": "单位价格",
+      "description": "Divide total price by positive quantity and round to two decimals for comparison display.",
+      "category": "commerce",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "total_price": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "quantity": {
+            "type": "number",
+            "minimum": 1e-06,
+            "maximum": 1000000
+          }
+        },
+        "required": [
+          "total_price",
+          "quantity"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 128000
+      },
+      "example_input": {
+        "total_price": "12.00",
+        "quantity": 3
+      },
+      "example_output": "4.00"
+    },
+    {
+      "name": "commerce.volumetric_weight",
+      "version": "1.0.0",
+      "title": "包裹体积重",
+      "description": "Calculate L×W×H/divisor from centimetre dimensions; caller supplies the carrier's divisor and actual kilograms.",
+      "category": "commerce",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "length_cm": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10000
+          },
+          "width_cm": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10000
+          },
+          "height_cm": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10000
+          },
+          "divisor": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 10000
+          },
+          "actual_kg": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100000
+          }
+        },
+        "required": [
+          "length_cm",
+          "width_cm",
+          "height_cm",
+          "divisor",
+          "actual_kg"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "volumetric_kg": {
+            "type": "number",
+            "minimum": -1e+100,
+            "maximum": 1e+100
+          },
+          "chargeable_kg": {
+            "type": "number",
+            "minimum": -1e+100,
+            "maximum": 1e+100
+          }
+        },
+        "required": [
+          "volumetric_kg",
+          "chargeable_kg"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "example_input": {
+        "length_cm": 50,
+        "width_cm": 40,
+        "height_cm": 30,
+        "divisor": 5000,
+        "actual_kg": 8
+      },
+      "example_output": {
+        "volumetric_kg": 12.0,
+        "chargeable_kg": 12.0
+      }
+    },
+    {
+      "name": "csv.escape_formulas",
+      "version": "1.0.0",
+      "title": "防止表格公式注入",
+      "description": "Prefix risky spreadsheet cells (=,+,-,@ or control/leading-whitespace variants) with an apostrophe before CSV export.",
+      "category": "csv",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 0,
+                "maxLength": 2000
+              },
+              "minItems": 0,
+              "maxItems": 100
+            },
+            "minItems": 0,
+            "maxItems": 500
+          }
+        },
+        "required": [
+          "rows"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "array",
+        "items": {
+          "type": [
+            "object",
+            "array",
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
+          "maxProperties": 1000,
+          "maxItems": 1000,
+          "maxLength": 60000,
+          "minimum": -1e+100,
+          "maximum": 1e+100
+        },
+        "minItems": 0,
+        "maxItems": 10000
+      },
+      "example_input": {
+        "rows": [
+          [
+            "name",
+            "value"
+          ],
+          [
+            "item",
+            "=1+1"
+          ]
+        ]
+      },
+      "example_output": [
+        [
+          "name",
+          "value"
+        ],
+        [
+          "item",
+          "'=1+1"
+        ]
+      ]
+    },
+    {
+      "name": "csv.parse",
+      "version": "1.0.0",
+      "title": "解析 CSV 行",
+      "description": "Parse supplied CSV into string rows with explicit delimiter and strict quoting.",
+      "category": "csv",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 60000
+          },
+          "delimiter": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1,
+            "enum": [
+              ",",
+              ";",
+              "\t",
+              "|"
+            ]
+          }
+        },
+        "required": [
+          "text",
+          "delimiter"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "array",
+        "items": {
+          "type": [
+            "object",
+            "array",
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
+          "maxProperties": 1000,
+          "maxItems": 1000,
+          "maxLength": 60000,
+          "minimum": -1e+100,
+          "maximum": 1e+100
+        },
+        "minItems": 0,
+        "maxItems": 10000
+      },
+      "example_input": {
+        "text": "sku,title\nA,\"Red, Large\"\n",
+        "delimiter": ","
+      },
+      "example_output": [
+        [
+          "sku",
+          "title"
+        ],
+        [
+          "A",
+          "Red, Large"
+        ]
+      ]
+    },
+    {
+      "name": "csv.select_columns",
+      "version": "1.0.0",
+      "title": "选择数据表列",
+      "description": "Select zero-based column indices from every row; missing columns fail.",
+      "category": "csv",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 0,
+                "maxLength": 2000
+              },
+              "minItems": 0,
+              "maxItems": 100
+            },
+            "minItems": 0,
+            "maxItems": 500
+          },
+          "indices": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 99
+            },
+            "minItems": 0,
+            "maxItems": 100
+          }
+        },
+        "required": [
+          "rows",
+          "indices"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "array",
+        "items": {
+          "type": [
+            "object",
+            "array",
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
+          "maxProperties": 1000,
+          "maxItems": 1000,
+          "maxLength": 60000,
+          "minimum": -1e+100,
+          "maximum": 1e+100
+        },
+        "minItems": 0,
+        "maxItems": 10000
+      },
+      "example_input": {
+        "rows": [
+          [
+            "sku",
+            "title",
+            "qty"
+          ],
+          [
+            "A",
+            "Shirt",
+            "2"
+          ]
+        ],
+        "indices": [
+          0,
+          2
+        ]
+      },
+      "example_output": [
+        [
+          "sku",
+          "qty"
+        ],
+        [
+          "A",
+          "2"
+        ]
+      ]
+    },
+    {
+      "name": "csv.to_records",
+      "version": "1.0.0",
+      "title": "CSV 转对象列表",
+      "description": "Use the first row as unique nonempty headers and require equal row widths.",
+      "category": "csv",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 60000
+          },
+          "delimiter": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1,
+            "enum": [
+              ",",
+              ";",
+              "\t",
+              "|"
+            ]
+          }
+        },
+        "required": [
+          "text",
+          "delimiter"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "array",
+        "items": {
+          "type": [
+            "object",
+            "array",
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
+          "maxProperties": 1000,
+          "maxItems": 1000,
+          "maxLength": 60000,
+          "minimum": -1e+100,
+          "maximum": 1e+100
+        },
+        "minItems": 0,
+        "maxItems": 10000
+      },
+      "example_input": {
+        "text": "sku,qty\nA,2\nB,3\n",
+        "delimiter": ","
+      },
+      "example_output": [
+        {
+          "sku": "A",
+          "qty": "2"
+        },
+        {
+          "sku": "B",
+          "qty": "3"
+        }
+      ]
+    },
+    {
+      "name": "csv.transpose",
+      "version": "1.0.0",
+      "title": "转置数据表",
+      "description": "Transpose a rectangular string table; ragged rows are rejected.",
+      "category": "csv",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 0,
+                "maxLength": 2000
+              },
+              "minItems": 0,
+              "maxItems": 100
+            },
+            "minItems": 0,
+            "maxItems": 500
+          }
+        },
+        "required": [
+          "rows"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "array",
+        "items": {
+          "type": [
+            "object",
+            "array",
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
+          "maxProperties": 1000,
+          "maxItems": 1000,
+          "maxLength": 60000,
+          "minimum": -1e+100,
+          "maximum": 1e+100
+        },
+        "minItems": 0,
+        "maxItems": 10000
+      },
+      "example_input": {
+        "rows": [
+          [
+            "a",
+            "b"
+          ],
+          [
+            "1",
+            "2"
+          ]
+        ]
+      },
+      "example_output": [
+        [
+          "a",
+          "1"
+        ],
+        [
+          "b",
+          "2"
+        ]
+      ]
+    },
+    {
+      "name": "csv.write",
+      "version": "1.0.0",
+      "title": "生成 CSV",
+      "description": "Serialize string rows using RFC-style quoting and LF line endings.",
+      "category": "csv",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 0,
+                "maxLength": 2000
+              },
+              "minItems": 0,
+              "maxItems": 100
+            },
+            "minItems": 0,
+            "maxItems": 500
+          },
+          "delimiter": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1,
+            "enum": [
+              ",",
+              ";",
+              "\t",
+              "|"
+            ]
+          }
+        },
+        "required": [
+          "rows",
+          "delimiter"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 128000
+      },
+      "example_input": {
+        "rows": [
+          [
+            "sku",
+            "title"
+          ],
+          [
+            "A",
+            "Red, Large"
+          ]
+        ],
+        "delimiter": ","
+      },
+      "example_output": "sku,title\nA,\"Red, Large\"\n"
+    },
+    {
+      "name": "datetime.add_days",
+      "version": "1.0.0",
+      "title": "日期加减天数",
+      "description": "Add a signed number of calendar days to an ISO date.",
+      "category": "datetime",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 10
+          },
+          "days": {
+            "type": "integer",
+            "minimum": -36600,
+            "maximum": 36600
+          }
+        },
+        "required": [
+          "date",
+          "days"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 128000
+      },
+      "example_input": {
+        "date": "2024-02-28",
+        "days": 2
+      },
+      "example_output": "2024-03-01"
+    },
+    {
+      "name": "datetime.add_months",
+      "version": "1.0.0",
+      "title": "日期加减月份",
+      "description": "Shift calendar months and clamp the day to the destination month's final day.",
+      "category": "datetime",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 10
+          },
+          "months": {
+            "type": "integer",
+            "minimum": -1200,
+            "maximum": 1200
+          }
+        },
+        "required": [
+          "date",
+          "months"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 128000
+      },
+      "example_input": {
+        "date": "2024-01-31",
+        "months": 1
+      },
+      "example_output": "2024-02-29"
+    },
+    {
+      "name": "datetime.business_days",
+      "version": "1.0.0",
+      "title": "统计工作日",
+      "description": "Count Monday-Friday days in [start,end), excluding explicitly supplied holidays; no jurisdiction-specific calendar is assumed.",
+      "category": "datetime",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "start": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 10
+          },
+          "end": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 10
+          },
+          "holidays": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 10,
+              "maxLength": 10
+            },
+            "minItems": 0,
+            "maxItems": 500
+          }
+        },
+        "required": [
+          "start",
+          "end",
+          "holidays"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "number",
+        "minimum": -1e+100,
+        "maximum": 1e+100
+      },
+      "example_input": {
+        "start": "2024-01-01",
+        "end": "2024-01-08",
+        "holidays": [
+          "2024-01-01"
+        ]
+      },
+      "example_output": 4
+    },
+    {
+      "name": "datetime.convert_offset",
+      "version": "1.0.0",
+      "title": "转换时区偏移",
+      "description": "Render an aware ISO datetime at a supplied fixed UTC offset in minutes; no daylight-saving rules are inferred.",
+      "category": "datetime",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "datetime": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "offset_minutes": {
+            "type": "integer",
+            "minimum": -840,
+            "maximum": 840
+          }
+        },
+        "required": [
+          "datetime",
+          "offset_minutes"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 128000
+      },
+      "example_input": {
+        "datetime": "2024-01-01T00:00:00+00:00",
+        "offset_minutes": 480
+      },
+      "example_output": "2024-01-01T08:00:00+08:00"
+    },
+    {
+      "name": "datetime.date_parts",
+      "version": "1.0.0",
+      "title": "分解日期",
+      "description": "Return calendar fields, ISO weekday (Monday=1), ISO week/year and day of year.",
+      "category": "datetime",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 10
+          }
+        },
+        "required": [
+          "date"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "year": {
+            "type": "number",
+            "minimum": -1e+100,
+            "maximum": 1e+100
+          },
+          "month": {
+            "type": "number",
+            "minimum": -1e+100,
+            "maximum": 1e+100
+          },
+          "day": {
+            "type": "number",
+            "minimum": -1e+100,
+            "maximum": 1e+100
+          },
+          "weekday": {
+            "type": "number",
+            "minimum": -1e+100,
+            "maximum": 1e+100
+          },
+          "day_of_year": {
+            "type": "number",
+            "minimum": -1e+100,
+            "maximum": 1e+100
+          },
+          "iso_week": {
+            "type": "number",
+            "minimum": -1e+100,
+            "maximum": 1e+100
+          },
+          "iso_year": {
+            "type": "number",
+            "minimum": -1e+100,
+            "maximum": 1e+100
+          }
+        },
+        "required": [
+          "year",
+          "month",
+          "day",
+          "weekday",
+          "day_of_year",
+          "iso_week",
+          "iso_year"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "example_input": {
+        "date": "2024-02-29"
+      },
+      "example_output": {
+        "year": 2024,
+        "month": 2,
+        "day": 29,
+        "weekday": 4,
+        "day_of_year": 60,
+        "iso_week": 9,
+        "iso_year": 2024
+      }
+    },
+    {
+      "name": "datetime.date_range",
+      "version": "1.0.0",
+      "title": "生成日期序列",
+      "description": "Generate an ascending inclusive date sequence with positive day spacing and at most 1000 dates.",
+      "category": "datetime",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "start": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 10
+          },
+          "end": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 10
+          },
+          "step_days": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 366
+          }
+        },
+        "required": [
+          "start",
+          "end",
+          "step_days"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "array",
+        "items": {
+          "type": [
+            "object",
+            "array",
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
+          "maxProperties": 1000,
+          "maxItems": 1000,
+          "maxLength": 60000,
+          "minimum": -1e+100,
+          "maximum": 1e+100
+        },
+        "minItems": 0,
+        "maxItems": 10000
+      },
+      "example_input": {
+        "start": "2024-01-01",
+        "end": "2024-01-05",
+        "step_days": 2
+      },
+      "example_output": [
+        "2024-01-01",
+        "2024-01-03",
+        "2024-01-05"
+      ]
+    },
+    {
+      "name": "datetime.days_between",
+      "version": "1.0.0",
+      "title": "计算日期间隔",
+      "description": "Return signed end minus start in calendar days.",
+      "category": "datetime",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "start": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 10
+          },
+          "end": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 10
+          }
+        },
+        "required": [
+          "start",
+          "end"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "number",
+        "minimum": -1e+100,
+        "maximum": 1e+100
+      },
+      "example_input": {
+        "start": "2024-02-28",
+        "end": "2024-03-01"
+      },
+      "example_output": 2
+    },
+    {
+      "name": "datetime.from_unix",
+      "version": "1.0.0",
+      "title": "时间戳转日期时间",
+      "description": "Convert Unix seconds in the supported year range to an ISO UTC datetime.",
+      "category": "datetime",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "seconds": {
+            "type": "number",
+            "minimum": -62135596800,
+            "maximum": 253402300799
+          }
+        },
+        "required": [
+          "seconds"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 128000
+      },
+      "example_input": {
+        "seconds": 0
+      },
+      "example_output": "1970-01-01T00:00:00+00:00"
+    },
+    {
+      "name": "datetime.month_bounds",
+      "version": "1.0.0",
+      "title": "月份起止日期",
+      "description": "Return the first and last calendar dates of the supplied date's month.",
+      "category": "datetime",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 10
+          }
+        },
+        "required": [
+          "date"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "first": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 128000
+          },
+          "last": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 128000
+          }
+        },
+        "required": [
+          "first",
+          "last"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "example_input": {
+        "date": "2024-02-15"
+      },
+      "example_output": {
+        "first": "2024-02-01",
+        "last": "2024-02-29"
+      }
+    },
+    {
+      "name": "datetime.to_unix",
+      "version": "1.0.0",
+      "title": "日期时间转时间戳",
+      "description": "Convert an ISO datetime with explicit UTC offset to Unix seconds.",
+      "category": "datetime",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "datetime": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          }
+        },
+        "required": [
+          "datetime"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "number",
+        "minimum": -1e+100,
+        "maximum": 1e+100
+      },
+      "example_input": {
+        "datetime": "1970-01-01T08:00:00+08:00"
+      },
+      "example_output": 0.0
+    },
+    {
+      "name": "encoding.base64_decode",
+      "version": "1.0.0",
+      "title": "Base64 解码",
+      "description": "Strictly decode standard Base64 into UTF-8 text, rejecting binary or malformed input.",
+      "category": "encoding",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 20000
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 128000
+      },
+      "example_input": {
+        "text": "aGVsbG8="
+      },
+      "example_output": "hello"
+    },
+    {
+      "name": "encoding.base64_encode",
+      "version": "1.0.0",
+      "title": "Base64 编码",
+      "description": "Encode UTF-8 text into standard padded Base64.",
+      "category": "encoding",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10000
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 128000
+      },
+      "example_input": {
+        "text": "hello"
+      },
+      "example_output": "aGVsbG8="
+    },
+    {
+      "name": "encoding.hex_decode",
+      "version": "1.0.0",
+      "title": "十六进制解码",
+      "description": "Decode hexadecimal bytes as strict UTF-8 text; ASCII whitespace is permitted.",
+      "category": "encoding",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 20000
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 128000
+      },
+      "example_input": {
+        "text": "4869"
+      },
+      "example_output": "Hi"
+    },
+    {
+      "name": "encoding.hex_encode",
+      "version": "1.0.0",
+      "title": "十六进制编码",
+      "description": "Encode the UTF-8 bytes of text as lowercase hexadecimal.",
+      "category": "encoding",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10000
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 128000
+      },
+      "example_input": {
+        "text": "Hi"
+      },
+      "example_output": "4869"
+    },
+    {
+      "name": "encoding.query_build",
+      "version": "1.0.0",
+      "title": "生成查询参数",
+      "description": "Build a form-encoded query string from ordered key/value pairs; spaces become +.",
+      "category": "encoding",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "pairs": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 0,
+                "maxLength": 1000
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "minItems": 0,
+            "maxItems": 100
+          }
+        },
+        "required": [
+          "pairs"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 128000
+      },
+      "example_input": {
+        "pairs": [
+          [
+            "q",
+            "red shirt"
+          ],
+          [
+            "page",
+            "2"
+          ]
+        ]
+      },
+      "example_output": "q=red+shirt&page=2"
+    },
+    {
+      "name": "encoding.query_parse",
+      "version": "1.0.0",
+      "title": "解析查询参数",
+      "description": "Parse form-style query parameters into ordered key/value pairs, preserving duplicate keys and blanks.",
+      "category": "encoding",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10000
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "array",
+        "items": {
+          "type": [
+            "object",
+            "array",
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
+          "maxProperties": 1000,
+          "maxItems": 1000,
+          "maxLength": 60000,
+          "minimum": -1e+100,
+          "maximum": 1e+100
+        },
+        "minItems": 0,
+        "maxItems": 10000
+      },
+      "example_input": {
+        "query": "tag=red&tag=blue&empty="
+      },
+      "example_output": [
+        [
+          "tag",
+          "red"
+        ],
+        [
+          "tag",
+          "blue"
+        ],
+        [
+          "empty",
+          ""
+        ]
+      ]
+    },
+    {
+      "name": "encoding.sha256",
+      "version": "1.0.0",
+      "title": "SHA256 校验和",
+      "description": "Compute SHA256 of supplied UTF-8 text; no file access.",
+      "category": "encoding",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10000
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 128000
+      },
+      "example_input": {
+        "text": "abc"
+      },
+      "example_output": "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+    },
+    {
+      "name": "encoding.sha512",
+      "version": "1.0.0",
+      "title": "SHA512 校验和",
+      "description": "Compute SHA512 of supplied UTF-8 text; no file access.",
+      "category": "encoding",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10000
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 128000
+      },
+      "example_input": {
+        "text": "abc"
+      },
+      "example_output": "ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f"
+    },
+    {
+      "name": "encoding.url_decode",
+      "version": "1.0.0",
+      "title": "URL 组件解码",
+      "description": "Strictly percent-decode a UTF-8 component; literal + remains +.",
+      "category": "encoding",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 20000
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 128000
+      },
+      "example_input": {
+        "text": "red%20shirt%2FXL"
+      },
+      "example_output": "red shirt/XL"
+    },
+    {
+      "name": "encoding.url_encode",
+      "version": "1.0.0",
+      "title": "URL 组件编码",
+      "description": "Percent-encode a UTF-8 URL component; spaces become %20.",
+      "category": "encoding",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10000
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 128000
+      },
+      "example_input": {
+        "text": "red shirt/XL"
+      },
+      "example_output": "red%20shirt%2FXL"
+    },
+    {
+      "name": "encoding.url_parse",
+      "version": "1.0.0",
+      "title": "解析 URL",
+      "description": "Split a URL into components without requesting it; invalid ports raise an input error.",
+      "category": "encoding",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 8000
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "scheme": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 8000
+          },
+          "hostname": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 8000
+          },
+          "port": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 65535
+          },
+          "path": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 8000
+          },
+          "query": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 8000
+          },
+          "fragment": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 8000
+          }
+        },
+        "required": [
+          "scheme",
+          "hostname",
+          "port",
+          "path",
+          "query",
+          "fragment"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "example_input": {
+        "url": "https://shop.example:8443/items?q=shirt#size"
+      },
+      "example_output": {
+        "scheme": "https",
+        "hostname": "shop.example",
+        "port": 8443,
+        "path": "/items",
+        "query": "q=shirt",
+        "fragment": "size"
+      }
+    },
+    {
+      "name": "encoding.uuid_v5",
+      "version": "1.0.0",
+      "title": "确定性 UUID",
+      "description": "Generate a namespace-based UUID v5 using a supplied DNS name; unsuitable as a secret token.",
+      "category": "encoding",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 128000
+      },
+      "example_input": {
+        "name": "python.org"
+      },
+      "example_output": "886313e1-3b8a-5372-9b90-0c9aee199e5d"
+    },
+    {
+      "name": "inventory.abc_classify",
+      "version": "1.0.0",
+      "title": "ABC 库存分类",
+      "description": "Sort annual consumption value descending; classify by cumulative share BEFORE each item (A<80%, B<95%, else C); zero-value totals are C.",
+      "category": "inventory",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "sku": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "unit_cost": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 32
+                },
+                "annual_units": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000
+                }
+              },
+              "required": [
+                "sku",
+                "unit_cost",
+                "annual_units"
+              ],
+              "additionalProperties": false,
+              "maxProperties": 1000
+            },
+            "minItems": 1,
+            "maxItems": 500
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "array",
+        "items": {
+          "type": [
+            "object",
+            "array",
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
+          "maxProperties": 1000,
+          "maxItems": 1000,
+          "maxLength": 60000,
+          "minimum": -1e+100,
+          "maximum": 1e+100
+        },
+        "minItems": 0,
+        "maxItems": 10000
+      },
+      "example_input": {
+        "items": [
+          {
+            "sku": "A",
+            "unit_cost": "8.00",
+            "annual_units": 10
+          },
+          {
+            "sku": "B",
+            "unit_cost": "2.00",
+            "annual_units": 10
+          }
+        ]
+      },
+      "example_output": [
+        {
+          "sku": "A",
+          "annual_value": "80.00",
+          "class": "A",
+          "cumulative_percent": 80.0
+        },
+        {
+          "sku": "B",
+          "annual_value": "20.00",
+          "class": "B",
+          "cumulative_percent": 100.0
+        }
+      ]
+    },
+    {
+      "name": "inventory.allocate",
+      "version": "1.0.0",
+      "title": "按订单顺序分配库存",
+      "description": "Allocate a supplied stock quantity to requests in input order, reporting unfilled demand and remaining units.",
+      "category": "inventory",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "available": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "requests": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "order": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "quantity": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000
+                }
+              },
+              "required": [
+                "order",
+                "quantity"
+              ],
+              "additionalProperties": false,
+              "maxProperties": 1000
+            },
+            "minItems": 0,
+            "maxItems": 500
+          }
+        },
+        "required": [
+          "available",
+          "requests"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "allocations": {
+            "type": "array",
+            "items": {
+              "type": [
+                "object",
+                "array",
+                "string",
+                "number",
+                "boolean",
+                "null"
+              ],
+              "maxProperties": 1000,
+              "maxItems": 1000,
+              "maxLength": 60000,
+              "minimum": -1e+100,
+              "maximum": 1e+100
+            },
+            "minItems": 0,
+            "maxItems": 10000
+          },
+          "remaining": {
+            "type": "number",
+            "minimum": -1e+100,
+            "maximum": 1e+100
+          }
+        },
+        "required": [
+          "allocations",
+          "remaining"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "example_input": {
+        "available": 5,
+        "requests": [
+          {
+            "order": "A",
+            "quantity": 3
+          },
+          {
+            "order": "B",
+            "quantity": 4
+          }
+        ]
+      },
+      "example_output": {
+        "allocations": [
+          {
+            "order": "A",
+            "allocated": 3,
+            "unfilled": 0
+          },
+          {
+            "order": "B",
+            "allocated": 2,
+            "unfilled": 2
+          }
+        ],
+        "remaining": 0
+      }
+    },
+    {
+      "name": "inventory.available",
+      "version": "1.0.0",
+      "title": "计算可售库存",
+      "description": "Subtract reserved and safety stock from on-hand inventory, reporting nonnegative availability and shortfall.",
+      "category": "inventory",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "on_hand": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "reserved": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "safety_stock": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          }
+        },
+        "required": [
+          "on_hand",
+          "reserved",
+          "safety_stock"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "available": {
+            "type": "number",
+            "minimum": -1e+100,
+            "maximum": 1e+100
+          },
+          "shortfall": {
+            "type": "number",
+            "minimum": -1e+100,
+            "maximum": 1e+100
+          }
+        },
+        "required": [
+          "available",
+          "shortfall"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "example_input": {
+        "on_hand": 100,
+        "reserved": 30,
+        "safety_stock": 10
+      },
+      "example_output": {
+        "available": 60,
+        "shortfall": 0
+      }
+    },
+    {
+      "name": "inventory.days_of_cover",
+      "version": "1.0.0",
+      "title": "库存可用天数",
+      "description": "Divide available units by positive daily demand; zero demand is rejected rather than returned as infinity.",
+      "category": "inventory",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "available": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "daily_demand": {
+            "type": "number",
+            "minimum": 1e-06,
+            "maximum": 100000
+          }
+        },
+        "required": [
+          "available",
+          "daily_demand"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "number",
+        "minimum": -1e+100,
+        "maximum": 1e+100
+      },
+      "example_input": {
+        "available": 100,
+        "daily_demand": 4
+      },
+      "example_output": 25.0
+    },
+    {
+      "name": "inventory.reconcile",
+      "version": "1.0.0",
+      "title": "库存盘点差异",
+      "description": "Compare expected and counted quantities across the union of unique SKUs; missing records count as zero.",
+      "category": "inventory",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "expected": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "sku": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "quantity": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000
+                }
+              },
+              "required": [
+                "sku",
+                "quantity"
+              ],
+              "additionalProperties": false,
+              "maxProperties": 1000
+            },
+            "minItems": 0,
+            "maxItems": 500
+          },
+          "counted": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "sku": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "quantity": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000
+                }
+              },
+              "required": [
+                "sku",
+                "quantity"
+              ],
+              "additionalProperties": false,
+              "maxProperties": 1000
+            },
+            "minItems": 0,
+            "maxItems": 500
+          }
+        },
+        "required": [
+          "expected",
+          "counted"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "array",
+        "items": {
+          "type": [
+            "object",
+            "array",
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
+          "maxProperties": 1000,
+          "maxItems": 1000,
+          "maxLength": 60000,
+          "minimum": -1e+100,
+          "maximum": 1e+100
+        },
+        "minItems": 0,
+        "maxItems": 10000
+      },
+      "example_input": {
+        "expected": [
+          {
+            "sku": "A",
+            "quantity": 10
+          }
+        ],
+        "counted": [
+          {
+            "sku": "A",
+            "quantity": 8
+          },
+          {
+            "sku": "B",
+            "quantity": 2
+          }
+        ]
+      },
+      "example_output": [
+        {
+          "sku": "A",
+          "expected": 10,
+          "counted": 8,
+          "difference": -2
+        },
+        {
+          "sku": "B",
+          "expected": 0,
+          "counted": 2,
+          "difference": 2
+        }
+      ]
+    },
+    {
+      "name": "inventory.reorder_point",
+      "version": "1.0.0",
+      "title": "计算补货点",
+      "description": "Use demand×lead time+safety stock, rounded up; compare with on-hand+on-order-reserved inventory position.",
+      "category": "inventory",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "on_hand": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "on_order": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "reserved": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "daily_demand": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100000
+          },
+          "lead_days": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 3650
+          },
+          "safety_stock": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          }
+        },
+        "required": [
+          "on_hand",
+          "on_order",
+          "reserved",
+          "daily_demand",
+          "lead_days",
+          "safety_stock"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "reorder_point": {
+            "type": "number",
+            "minimum": -1e+100,
+            "maximum": 1e+100
+          },
+          "inventory_position": {
+            "type": "number",
+            "minimum": -1e+100,
+            "maximum": 1e+100
+          },
+          "reorder_needed": {
+            "type": "boolean"
+          },
+          "suggested_quantity": {
+            "type": "number",
+            "minimum": -1e+100,
+            "maximum": 1e+100
+          }
+        },
+        "required": [
+          "reorder_point",
+          "inventory_position",
+          "reorder_needed",
+          "suggested_quantity"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "example_input": {
+        "on_hand": 20,
+        "on_order": 0,
+        "reserved": 5,
+        "daily_demand": 4,
+        "lead_days": 5,
+        "safety_stock": 10
+      },
+      "example_output": {
+        "reorder_point": 30,
+        "inventory_position": 15,
+        "reorder_needed": true,
+        "suggested_quantity": 15
+      }
+    },
+    {
+      "name": "json.diff",
+      "version": "1.0.0",
+      "title": "比较 JSON 数据",
+      "description": "Report sorted leaf-path additions, removals and changes; this is a report, not an RFC 6902 patch.",
+      "category": "json",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "before": {
+            "type": [
+              "object",
+              "array",
+              "string",
+              "number",
+              "boolean",
+              "null"
+            ],
+            "maxProperties": 1000,
+            "maxItems": 1000,
+            "maxLength": 60000,
+            "minimum": -1e+100,
+            "maximum": 1e+100
+          },
+          "after": {
+            "type": [
+              "object",
+              "array",
+              "string",
+              "number",
+              "boolean",
+              "null"
+            ],
+            "maxProperties": 1000,
+            "maxItems": 1000,
+            "maxLength": 60000,
+            "minimum": -1e+100,
+            "maximum": 1e+100
+          }
+        },
+        "required": [
+          "before",
+          "after"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "array",
+        "items": {
+          "type": [
+            "object",
+            "array",
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
+          "maxProperties": 1000,
+          "maxItems": 1000,
+          "maxLength": 60000,
+          "minimum": -1e+100,
+          "maximum": 1e+100
+        },
+        "minItems": 0,
+        "maxItems": 10000
+      },
+      "example_input": {
+        "before": {
+          "price": 10
+        },
+        "after": {
+          "price": 12,
+          "sku": "A"
+        }
+      },
+      "example_output": [
+        {
+          "path": "/price",
+          "operation": "change",
+          "before": 10,
+          "after": 12
+        },
+        {
+          "path": "/sku",
+          "operation": "add",
+          "after": "A"
+        }
+      ]
+    },
+    {
+      "name": "json.flatten",
+      "version": "1.0.0",
+      "title": "展平 JSON",
+      "description": "Map each leaf or empty container to its escaped RFC 6901 path, preserving array indices.",
+      "category": "json",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": [
+              "object",
+              "array",
+              "string",
+              "number",
+              "boolean",
+              "null"
+            ],
+            "maxProperties": 1000,
+            "maxItems": 1000,
+            "maxLength": 60000,
+            "minimum": -1e+100,
+            "maximum": 1e+100
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": {
+          "type": [
+            "object",
+            "array",
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
+          "maxProperties": 1000,
+          "maxItems": 1000,
+          "maxLength": 60000,
+          "minimum": -1e+100,
+          "maximum": 1e+100
+        },
+        "maxProperties": 1000
+      },
+      "example_input": {
+        "data": {
+          "a": {
+            "b": 2
+          },
+          "tags": [
+            "x"
+          ]
+        }
+      },
+      "example_output": {
+        "/a/b": 2,
+        "/tags/0": "x"
+      }
+    },
+    {
+      "name": "json.format",
+      "version": "1.0.0",
+      "title": "格式化 JSON",
+      "description": "Serialize supplied JSON with sorted keys and bounded indentation.",
+      "category": "json",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": [
+              "object",
+              "array",
+              "string",
+              "number",
+              "boolean",
+              "null"
+            ],
+            "maxProperties": 1000,
+            "maxItems": 1000,
+            "maxLength": 60000,
+            "minimum": -1e+100,
+            "maximum": 1e+100
+          },
+          "indent": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4
+          }
+        },
+        "required": [
+          "data",
+          "indent"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 128000
+      },
+      "example_input": {
+        "data": {
+          "b": 2,
+          "a": 1
+        },
+        "indent": 2
+      },
+      "example_output": "{\n  \"a\": 1,\n  \"b\": 2\n}"
+    },
+    {
+      "name": "json.get_pointer",
+      "version": "1.0.0",
+      "title": "读取 JSON 路径",
+      "description": "Read a value at an RFC 6901 pointer, including escaped slashes and tildes; missing paths fail.",
+      "category": "json",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": [
+              "object",
+              "array",
+              "string",
+              "number",
+              "boolean",
+              "null"
+            ],
+            "maxProperties": 1000,
+            "maxItems": 1000,
+            "maxLength": 60000,
+            "minimum": -1e+100,
+            "maximum": 1e+100
+          },
+          "pointer": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "data",
+          "pointer"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": [
+          "object",
+          "array",
+          "string",
+          "number",
+          "boolean",
+          "null"
+        ],
+        "maxProperties": 1000,
+        "maxItems": 1000,
+        "maxLength": 60000,
+        "minimum": -1e+100,
+        "maximum": 1e+100
+      },
+      "example_input": {
+        "data": {
+          "items": [
+            {
+              "sku": "A"
+            }
+          ]
+        },
+        "pointer": "/items/0/sku"
+      },
+      "example_output": "A"
+    },
+    {
+      "name": "json.keys",
+      "version": "1.0.0",
+      "title": "列出对象字段",
+      "description": "Return sorted top-level keys from an object.",
+      "category": "json",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": {
+              "type": [
+                "object",
+                "array",
+                "string",
+                "number",
+                "boolean",
+                "null"
+              ],
+              "maxProperties": 1000,
+              "maxItems": 1000,
+              "maxLength": 60000,
+              "minimum": -1e+100,
+              "maximum": 1e+100
+            },
+            "maxProperties": 1000
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "array",
+        "items": {
+          "type": [
+            "object",
+            "array",
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
+          "maxProperties": 1000,
+          "maxItems": 1000,
+          "maxLength": 60000,
+          "minimum": -1e+100,
+          "maximum": 1e+100
+        },
+        "minItems": 0,
+        "maxItems": 10000
+      },
+      "example_input": {
+        "data": {
+          "b": 2,
+          "a": 1
+        }
+      },
+      "example_output": [
+        "a",
+        "b"
+      ]
+    },
+    {
+      "name": "json.merge_objects",
+      "version": "1.0.0",
+      "title": "合并 JSON 对象",
+      "description": "Shallow-merge objects in order; later values replace earlier values for the same key.",
+      "category": "json",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "objects": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {},
+              "required": [],
+              "additionalProperties": {
+                "type": [
+                  "object",
+                  "array",
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ],
+                "maxProperties": 1000,
+                "maxItems": 1000,
+                "maxLength": 60000,
+                "minimum": -1e+100,
+                "maximum": 1e+100
+              },
+              "maxProperties": 1000
+            },
+            "minItems": 0,
+            "maxItems": 50
+          }
+        },
+        "required": [
+          "objects"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": {
+          "type": [
+            "object",
+            "array",
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
+          "maxProperties": 1000,
+          "maxItems": 1000,
+          "maxLength": 60000,
+          "minimum": -1e+100,
+          "maximum": 1e+100
+        },
+        "maxProperties": 1000
+      },
+      "example_input": {
+        "objects": [
+          {
+            "a": 1,
+            "b": 2
+          },
+          {
+            "b": 3
+          }
+        ]
+      },
+      "example_output": {
+        "a": 1,
+        "b": 3
+      }
+    },
+    {
+      "name": "json.omit",
+      "version": "1.0.0",
+      "title": "排除对象字段",
+      "description": "Remove requested top-level keys from a supplied object.",
+      "category": "json",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": {
+              "type": [
+                "object",
+                "array",
+                "string",
+                "number",
+                "boolean",
+                "null"
+              ],
+              "maxProperties": 1000,
+              "maxItems": 1000,
+              "maxLength": 60000,
+              "minimum": -1e+100,
+              "maximum": 1e+100
+            },
+            "maxProperties": 1000
+          },
+          "keys": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 1000
+            },
+            "minItems": 0,
+            "maxItems": 500
+          }
+        },
+        "required": [
+          "data",
+          "keys"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": {
+          "type": [
+            "object",
+            "array",
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
+          "maxProperties": 1000,
+          "maxItems": 1000,
+          "maxLength": 60000,
+          "minimum": -1e+100,
+          "maximum": 1e+100
+        },
+        "maxProperties": 1000
+      },
+      "example_input": {
+        "data": {
+          "sku": "A",
+          "secret": "x"
+        },
+        "keys": [
+          "secret"
+        ]
+      },
+      "example_output": {
+        "sku": "A"
+      }
+    },
+    {
+      "name": "json.parse",
+      "version": "1.0.0",
+      "title": "解析 JSON",
+      "description": "Parse strict JSON; reject duplicate object keys, non-finite numbers and nesting deeper than ten containers.",
+      "category": "json",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 60000
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": [
+          "object",
+          "array",
+          "string",
+          "number",
+          "boolean",
+          "null"
+        ],
+        "maxProperties": 1000,
+        "maxItems": 1000,
+        "maxLength": 60000,
+        "minimum": -1e+100,
+        "maximum": 1e+100
+      },
+      "example_input": {
+        "text": "{\"name\":\"shirt\",\"sizes\":[\"M\",\"L\"]}"
+      },
+      "example_output": {
+        "name": "shirt",
+        "sizes": [
+          "M",
+          "L"
+        ]
+      }
+    },
+    {
+      "name": "json.pick",
+      "version": "1.0.0",
+      "title": "保留对象字段",
+      "description": "Return only requested keys that exist, preserving requested key order.",
+      "category": "json",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": {
+              "type": [
+                "object",
+                "array",
+                "string",
+                "number",
+                "boolean",
+                "null"
+              ],
+              "maxProperties": 1000,
+              "maxItems": 1000,
+              "maxLength": 60000,
+              "minimum": -1e+100,
+              "maximum": 1e+100
+            },
+            "maxProperties": 1000
+          },
+          "keys": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 1000
+            },
+            "minItems": 0,
+            "maxItems": 500
+          }
+        },
+        "required": [
+          "data",
+          "keys"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": {
+          "type": [
+            "object",
+            "array",
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
+          "maxProperties": 1000,
+          "maxItems": 1000,
+          "maxLength": 60000,
+          "minimum": -1e+100,
+          "maximum": 1e+100
+        },
+        "maxProperties": 1000
+      },
+      "example_input": {
+        "data": {
+          "sku": "A",
+          "secret": "x"
+        },
+        "keys": [
+          "sku"
+        ]
+      },
+      "example_output": {
+        "sku": "A"
+      }
+    },
+    {
+      "name": "json.set_pointer",
+      "version": "1.0.0",
+      "title": "更新 JSON 路径",
+      "description": "Return a copied document with a value replaced or object key inserted; parent containers must exist.",
+      "category": "json",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": [
+              "object",
+              "array",
+              "string",
+              "number",
+              "boolean",
+              "null"
+            ],
+            "maxProperties": 1000,
+            "maxItems": 1000,
+            "maxLength": 60000,
+            "minimum": -1e+100,
+            "maximum": 1e+100
+          },
+          "pointer": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 1000
+          },
+          "value": {
+            "type": [
+              "object",
+              "array",
+              "string",
+              "number",
+              "boolean",
+              "null"
+            ],
+            "maxProperties": 1000,
+            "maxItems": 1000,
+            "maxLength": 60000,
+            "minimum": -1e+100,
+            "maximum": 1e+100
+          }
+        },
+        "required": [
+          "data",
+          "pointer",
+          "value"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": [
+          "object",
+          "array",
+          "string",
+          "number",
+          "boolean",
+          "null"
+        ],
+        "maxProperties": 1000,
+        "maxItems": 1000,
+        "maxLength": 60000,
+        "minimum": -1e+100,
+        "maximum": 1e+100
+      },
+      "example_input": {
+        "data": {
+          "price": 10
+        },
+        "pointer": "/price",
+        "value": 12
+      },
+      "example_output": {
+        "price": 12
+      }
+    },
+    {
+      "name": "math.clamp",
+      "version": "1.0.0",
+      "title": "限制数值区间",
+      "description": "Clamp a value between inclusive minimum and maximum, rejecting inverted intervals.",
+      "category": "math",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "number",
+            "minimum": -1000000000000.0,
+            "maximum": 1000000000000.0
+          },
+          "minimum": {
+            "type": "number",
+            "minimum": -1000000000000.0,
+            "maximum": 1000000000000.0
+          },
+          "maximum": {
+            "type": "number",
+            "minimum": -1000000000000.0,
+            "maximum": 1000000000000.0
+          }
+        },
+        "required": [
+          "value",
+          "minimum",
+          "maximum"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "number",
+        "minimum": -1e+100,
+        "maximum": 1e+100
+      },
+      "example_input": {
+        "value": 120,
+        "minimum": 0,
+        "maximum": 100
+      },
+      "example_output": 100
+    },
+    {
+      "name": "math.combinations",
+      "version": "1.0.0",
+      "title": "组合数",
+      "description": "Compute the exact number of k-element selections from n, bounded to n ≤ 100.",
+      "category": "math",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "n": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "k": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          }
+        },
+        "required": [
+          "n",
+          "k"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "number",
+        "minimum": -1e+100,
+        "maximum": 1e+100
+      },
+      "example_input": {
+        "n": 5,
+        "k": 2
+      },
+      "example_output": 10
+    },
+    {
+      "name": "math.divmod",
+      "version": "1.0.0",
+      "title": "整数商和余数",
+      "description": "Return Python floor-division quotient and corresponding remainder; divisor zero is rejected.",
+      "category": "math",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "dividend": {
+            "type": "integer",
+            "minimum": -1000000,
+            "maximum": 1000000
+          },
+          "divisor": {
+            "type": "integer",
+            "minimum": -1000000,
+            "maximum": 1000000
+          }
+        },
+        "required": [
+          "dividend",
+          "divisor"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "quotient": {
+            "type": "number",
+            "minimum": -1e+100,
+            "maximum": 1e+100
+          },
+          "remainder": {
+            "type": "number",
+            "minimum": -1e+100,
+            "maximum": 1e+100
+          }
+        },
+        "required": [
+          "quotient",
+          "remainder"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "example_input": {
+        "dividend": 17,
+        "divisor": 5
+      },
+      "example_output": {
+        "quotient": 3,
+        "remainder": 2
+      }
+    },
+    {
+      "name": "math.factorial",
+      "version": "1.0.0",
+      "title": "阶乘",
+      "description": "Compute n! for integers from 0 through 60 with a fixed arithmetic bound.",
+      "category": "math",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "n": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 60
+          }
+        },
+        "required": [
+          "n"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "number",
+        "minimum": -1e+100,
+        "maximum": 1e+100
+      },
+      "example_input": {
+        "n": 5
+      },
+      "example_output": 120
+    },
+    {
+      "name": "math.gcd",
+      "version": "1.0.0",
+      "title": "最大公约数",
+      "description": "Return the nonnegative greatest common divisor of two bounded integers.",
+      "category": "math",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "a": {
+            "type": "integer",
+            "minimum": -1000000,
+            "maximum": 1000000
+          },
+          "b": {
+            "type": "integer",
+            "minimum": -1000000,
+            "maximum": 1000000
+          }
+        },
+        "required": [
+          "a",
+          "b"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "number",
+        "minimum": -1e+100,
+        "maximum": 1e+100
+      },
+      "example_input": {
+        "a": 48,
+        "b": 18
+      },
+      "example_output": 6
+    },
+    {
+      "name": "math.interpolate",
+      "version": "1.0.0",
+      "title": "线性插值",
+      "description": "Calculate the y value along the line through two points; coincident x coordinates are rejected.",
+      "category": "math",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "x": {
+            "type": "number",
+            "minimum": -1000000000000.0,
+            "maximum": 1000000000000.0
+          },
+          "x0": {
+            "type": "number",
+            "minimum": -1000000000000.0,
+            "maximum": 1000000000000.0
+          },
+          "y0": {
+            "type": "number",
+            "minimum": -1000000000000.0,
+            "maximum": 1000000000000.0
+          },
+          "x1": {
+            "type": "number",
+            "minimum": -1000000000000.0,
+            "maximum": 1000000000000.0
+          },
+          "y1": {
+            "type": "number",
+            "minimum": -1000000000000.0,
+            "maximum": 1000000000000.0
+          }
+        },
+        "required": [
+          "x",
+          "x0",
+          "y0",
+          "x1",
+          "y1"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "number",
+        "minimum": -1e+100,
+        "maximum": 1e+100
+      },
+      "example_input": {
+        "x": 5,
+        "x0": 0,
+        "y0": 10,
+        "x1": 10,
+        "y1": 30
+      },
+      "example_output": 20.0
+    },
+    {
+      "name": "math.lcm",
+      "version": "1.0.0",
+      "title": "最小公倍数",
+      "description": "Return the nonnegative least common multiple of two bounded integers; zero input returns zero.",
+      "category": "math",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "a": {
+            "type": "integer",
+            "minimum": -1000000,
+            "maximum": 1000000
+          },
+          "b": {
+            "type": "integer",
+            "minimum": -1000000,
+            "maximum": 1000000
+          }
+        },
+        "required": [
+          "a",
+          "b"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "number",
+        "minimum": -1e+100,
+        "maximum": 1e+100
+      },
+      "example_input": {
+        "a": 12,
+        "b": 18
+      },
+      "example_output": 36
+    },
+    {
+      "name": "math.percentage",
+      "version": "1.0.0",
+      "title": "计算占比",
+      "description": "Return part / whole × 100; zero denominator is rejected.",
+      "category": "math",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "part": {
+            "type": "number",
+            "minimum": -1000000000000.0,
+            "maximum": 1000000000000.0
+          },
+          "whole": {
+            "type": "number",
+            "minimum": -1000000000000.0,
+            "maximum": 1000000000000.0
+          }
+        },
+        "required": [
+          "part",
+          "whole"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "number",
+        "minimum": -1e+100,
+        "maximum": 1e+100
+      },
+      "example_input": {
+        "part": 25,
+        "whole": 200
+      },
+      "example_output": 12.5
+    },
+    {
+      "name": "math.percentage_change",
+      "version": "1.0.0",
+      "title": "计算增长率",
+      "description": "Return (new-old)/abs(old) × 100; zero baseline is rejected.",
+      "category": "math",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "old": {
+            "type": "number",
+            "minimum": -1000000000000.0,
+            "maximum": 1000000000000.0
+          },
+          "new": {
+            "type": "number",
+            "minimum": -1000000000000.0,
+            "maximum": 1000000000000.0
+          }
+        },
+        "required": [
+          "old",
+          "new"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "number",
+        "minimum": -1e+100,
+        "maximum": 1e+100
+      },
+      "example_input": {
+        "old": 80,
+        "new": 100
+      },
+      "example_output": 25.0
+    },
+    {
+      "name": "math.power",
+      "version": "1.0.0",
+      "title": "有界幂运算",
+      "description": "Raise a bounded base to an integer exponent from -10 to 10; reject zero negative powers and overflow.",
+      "category": "math",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "base": {
+            "type": "number",
+            "minimum": -1000000.0,
+            "maximum": 1000000.0
+          },
+          "exponent": {
+            "type": "integer",
+            "minimum": -10,
+            "maximum": 10
+          }
+        },
+        "required": [
+          "base",
+          "exponent"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "number",
+        "minimum": -1e+100,
+        "maximum": 1e+100
+      },
+      "example_input": {
+        "base": 2,
+        "exponent": 8
+      },
+      "example_output": 256
+    },
+    {
+      "name": "math.product",
+      "version": "1.0.0",
+      "title": "连乘",
+      "description": "Multiply at most 25 bounded values; empty product is 1.",
+      "category": "math",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "minimum": -1000,
+              "maximum": 1000
+            },
+            "minItems": 0,
+            "maxItems": 25
+          }
+        },
+        "required": [
+          "values"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "number",
+        "minimum": -1e+100,
+        "maximum": 1e+100
+      },
+      "example_input": {
+        "values": [
+          2,
+          3,
+          4
+        ]
+      },
+      "example_output": 24
+    },
+    {
+      "name": "math.ratio_simplify",
+      "version": "1.0.0",
+      "title": "约分整数比",
+      "description": "Divide an integer ratio by its greatest common divisor; normalize a negative denominator.",
+      "category": "math",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "numerator": {
+            "type": "integer",
+            "minimum": -1000000,
+            "maximum": 1000000
+          },
+          "denominator": {
+            "type": "integer",
+            "minimum": -1000000,
+            "maximum": 1000000
+          }
+        },
+        "required": [
+          "numerator",
+          "denominator"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "numerator": {
+            "type": "number",
+            "minimum": -1e+100,
+            "maximum": 1e+100
+          },
+          "denominator": {
+            "type": "number",
+            "minimum": -1e+100,
+            "maximum": 1e+100
+          }
+        },
+        "required": [
+          "numerator",
+          "denominator"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "example_input": {
+        "numerator": 42,
+        "denominator": 56
+      },
+      "example_output": {
+        "numerator": 3,
+        "denominator": 4
+      }
+    },
+    {
+      "name": "math.round_decimal",
+      "version": "1.0.0",
+      "title": "十进制四舍五入",
+      "description": "Round a plain decimal string using ROUND_HALF_UP and return fixed fractional digits.",
+      "category": "math",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "places": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 8
+          }
+        },
+        "required": [
+          "value",
+          "places"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 128000
+      },
+      "example_input": {
+        "value": "2.675",
+        "places": 2
+      },
+      "example_output": "2.68"
+    },
+    {
+      "name": "math.sqrt",
+      "version": "1.0.0",
+      "title": "平方根",
+      "description": "Return the nonnegative square root of a nonnegative finite value.",
+      "category": "math",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1000000000000.0
+          }
+        },
+        "required": [
+          "value"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "number",
+        "minimum": -1e+100,
+        "maximum": 1e+100
+      },
+      "example_input": {
+        "value": 144
+      },
+      "example_output": 12.0
+    },
+    {
+      "name": "math.sum",
+      "version": "1.0.0",
+      "title": "求和",
+      "description": "Sum a finite bounded list with compensated floating-point summation.",
+      "category": "math",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "minimum": -1000000000000.0,
+              "maximum": 1000000000000.0
+            },
+            "minItems": 1,
+            "maxItems": 1000
+          }
+        },
+        "required": [
+          "values"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "number",
+        "minimum": -1e+100,
+        "maximum": 1e+100
+      },
+      "example_input": {
+        "values": [
+          0.1,
+          0.2,
+          0.3
+        ]
+      },
+      "example_output": 0.6
+    },
+    {
+      "name": "statistics.histogram",
+      "version": "1.0.0",
+      "title": "直方分箱",
+      "description": "Count values in supplied increasing bins, left-inclusive/right-exclusive except the final inclusive edge.",
+      "category": "statistics",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "minimum": -1000000000000.0,
+              "maximum": 1000000000000.0
+            },
+            "minItems": 1,
+            "maxItems": 1000
+          },
+          "edges": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "minimum": -1000000000000.0,
+              "maximum": 1000000000000.0
+            },
+            "minItems": 2,
+            "maxItems": 101
+          }
+        },
+        "required": [
+          "values",
+          "edges"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "edges": {
+            "type": "array",
+            "items": {
+              "type": [
+                "object",
+                "array",
+                "string",
+                "number",
+                "boolean",
+                "null"
+              ],
+              "maxProperties": 1000,
+              "maxItems": 1000,
+              "maxLength": 60000,
+              "minimum": -1e+100,
+              "maximum": 1e+100
+            },
+            "minItems": 0,
+            "maxItems": 10000
+          },
+          "counts": {
+            "type": "array",
+            "items": {
+              "type": [
+                "object",
+                "array",
+                "string",
+                "number",
+                "boolean",
+                "null"
+              ],
+              "maxProperties": 1000,
+              "maxItems": 1000,
+              "maxLength": 60000,
+              "minimum": -1e+100,
+              "maximum": 1e+100
+            },
+            "minItems": 0,
+            "maxItems": 10000
+          },
+          "outside": {
+            "type": "number",
+            "minimum": -1e+100,
+            "maximum": 1e+100
+          }
+        },
+        "required": [
+          "edges",
+          "counts",
+          "outside"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "example_input": {
+        "values": [
+          -1,
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "edges": [
+          0,
+          2,
+          4
+        ]
+      },
+      "example_output": {
+        "edges": [
+          0,
+          2,
+          4
+        ],
+        "counts": [
+          2,
+          3
+        ],
+        "outside": 1
+      }
+    },
+    {
+      "name": "statistics.mean",
+      "version": "1.0.0",
+      "title": "算术平均数",
+      "description": "Compute the arithmetic mean of a nonempty finite list.",
+      "category": "statistics",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "minimum": -1000000000000.0,
+              "maximum": 1000000000000.0
+            },
+            "minItems": 1,
+            "maxItems": 1000
+          }
+        },
+        "required": [
+          "values"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "number",
+        "minimum": -1e+100,
+        "maximum": 1e+100
+      },
+      "example_input": {
+        "values": [
+          2,
+          4,
+          9
+        ]
+      },
+      "example_output": 5.0
+    },
+    {
+      "name": "statistics.median",
+      "version": "1.0.0",
+      "title": "中位数",
+      "description": "Return the median, averaging the middle two values for even-length input.",
+      "category": "statistics",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "minimum": -1000000000000.0,
+              "maximum": 1000000000000.0
+            },
+            "minItems": 1,
+            "maxItems": 1000
+          }
+        },
+        "required": [
+          "values"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "number",
+        "minimum": -1e+100,
+        "maximum": 1e+100
+      },
+      "example_input": {
+        "values": [
+          9,
+          1,
+          4,
+          6
+        ]
+      },
+      "example_output": 5.0
+    },
+    {
+      "name": "statistics.minmax_normalize",
+      "version": "1.0.0",
+      "title": "最小最大归一化",
+      "description": "Scale values to [0,1] using observed minimum/maximum; a constant series becomes all zeros.",
+      "category": "statistics",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "minimum": -1000000000000.0,
+              "maximum": 1000000000000.0
+            },
+            "minItems": 1,
+            "maxItems": 1000
+          }
+        },
+        "required": [
+          "values"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "array",
+        "items": {
+          "type": [
+            "object",
+            "array",
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
+          "maxProperties": 1000,
+          "maxItems": 1000,
+          "maxLength": 60000,
+          "minimum": -1e+100,
+          "maximum": 1e+100
+        },
+        "minItems": 0,
+        "maxItems": 10000
+      },
+      "example_input": {
+        "values": [
+          10,
+          20,
+          30
+        ]
+      },
+      "example_output": [
+        0.0,
+        0.5,
+        1.0
+      ]
+    },
+    {
+      "name": "statistics.mode",
+      "version": "1.0.0",
+      "title": "众数",
+      "description": "Return every most-frequent number sorted ascending, including ties.",
+      "category": "statistics",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "minimum": -1000000000000.0,
+              "maximum": 1000000000000.0
+            },
+            "minItems": 1,
+            "maxItems": 1000
+          }
+        },
+        "required": [
+          "values"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "array",
+        "items": {
+          "type": [
+            "object",
+            "array",
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
+          "maxProperties": 1000,
+          "maxItems": 1000,
+          "maxLength": 60000,
+          "minimum": -1e+100,
+          "maximum": 1e+100
+        },
+        "minItems": 0,
+        "maxItems": 10000
+      },
+      "example_input": {
+        "values": [
+          3,
+          1,
+          3,
+          1,
+          2
+        ]
+      },
+      "example_output": [
+        1,
+        3
+      ]
+    },
+    {
+      "name": "statistics.moving_average",
+      "version": "1.0.0",
+      "title": "移动平均",
+      "description": "Return complete sliding-window arithmetic means without padding.",
+      "category": "statistics",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "minimum": -1000000000000.0,
+              "maximum": 1000000000000.0
+            },
+            "minItems": 1,
+            "maxItems": 1000
+          },
+          "window": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          }
+        },
+        "required": [
+          "values",
+          "window"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "array",
+        "items": {
+          "type": [
+            "object",
+            "array",
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
+          "maxProperties": 1000,
+          "maxItems": 1000,
+          "maxLength": 60000,
+          "minimum": -1e+100,
+          "maximum": 1e+100
+        },
+        "minItems": 0,
+        "maxItems": 10000
+      },
+      "example_input": {
+        "values": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "window": 2
+      },
+      "example_output": [
+        1.5,
+        2.5,
+        3.5
+      ]
+    },
+    {
+      "name": "statistics.percentile",
+      "version": "1.0.0",
+      "title": "百分位数",
+      "description": "Compute a percentile by linear interpolation at (n-1) × p/100.",
+      "category": "statistics",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "minimum": -1000000000000.0,
+              "maximum": 1000000000000.0
+            },
+            "minItems": 1,
+            "maxItems": 1000
+          },
+          "percentile": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          }
+        },
+        "required": [
+          "values",
+          "percentile"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "number",
+        "minimum": -1e+100,
+        "maximum": 1e+100
+      },
+      "example_input": {
+        "values": [
+          0,
+          10,
+          20,
+          30
+        ],
+        "percentile": 25
+      },
+      "example_output": 7.5
+    },
+    {
+      "name": "statistics.stddev",
+      "version": "1.0.0",
+      "title": "标准差",
+      "description": "Compute population or sample standard deviation with standard Bessel correction for samples.",
+      "category": "statistics",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "minimum": -1000000000000.0,
+              "maximum": 1000000000000.0
+            },
+            "minItems": 1,
+            "maxItems": 1000
+          },
+          "sample": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "values",
+          "sample"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "number",
+        "minimum": -1e+100,
+        "maximum": 1e+100
+      },
+      "example_input": {
+        "values": [
+          2,
+          4,
+          4,
+          4,
+          5,
+          5,
+          7,
+          9
+        ],
+        "sample": false
+      },
+      "example_output": 2.0
+    },
+    {
+      "name": "statistics.variance",
+      "version": "1.0.0",
+      "title": "方差",
+      "description": "Compute population or sample variance; sample variance requires at least two observations.",
+      "category": "statistics",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "minimum": -1000000000000.0,
+              "maximum": 1000000000000.0
+            },
+            "minItems": 1,
+            "maxItems": 1000
+          },
+          "sample": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "values",
+          "sample"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "number",
+        "minimum": -1e+100,
+        "maximum": 1e+100
+      },
+      "example_input": {
+        "values": [
+          1,
+          2,
+          3
+        ],
+        "sample": true
+      },
+      "example_output": 1.0
+    },
+    {
+      "name": "statistics.weighted_mean",
+      "version": "1.0.0",
+      "title": "加权平均",
+      "description": "Compute a weighted arithmetic mean with nonnegative weights and a positive total weight.",
+      "category": "statistics",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "minimum": -1000000000000.0,
+              "maximum": 1000000000000.0
+            },
+            "minItems": 1,
+            "maxItems": 1000
+          },
+          "weights": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000000000000.0
+            },
+            "minItems": 1,
+            "maxItems": 1000
+          }
+        },
+        "required": [
+          "values",
+          "weights"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "number",
+        "minimum": -1e+100,
+        "maximum": 1e+100
+      },
+      "example_input": {
+        "values": [
+          10,
+          20
+        ],
+        "weights": [
+          1,
+          3
+        ]
+      },
+      "example_output": 17.5
+    },
+    {
+      "name": "text.change_case",
+      "version": "1.0.0",
+      "title": "变换大小写",
+      "description": "Apply lower, upper, title or Unicode casefold casing.",
+      "category": "text",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10000
+          },
+          "mode": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10,
+            "enum": [
+              "lower",
+              "upper",
+              "title",
+              "casefold"
+            ]
+          }
+        },
+        "required": [
+          "text",
+          "mode"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 128000
+      },
+      "example_input": {
+        "text": "Summer SALE",
+        "mode": "lower"
+      },
+      "example_output": "summer sale"
+    },
+    {
+      "name": "text.character_frequency",
+      "version": "1.0.0",
+      "title": "统计字符频率",
+      "description": "Return per-character frequencies, including whitespace and Unicode characters.",
+      "category": "text",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "maxProperties": 1000
+      },
+      "example_input": {
+        "text": "aba"
+      },
+      "example_output": {
+        "a": 2,
+        "b": 1
+      }
+    },
+    {
+      "name": "text.deduplicate_lines",
+      "version": "1.0.0",
+      "title": "去重文本行",
+      "description": "Remove duplicate lines while preserving the first occurrence and exact whitespace.",
+      "category": "text",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10000
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 128000
+      },
+      "example_input": {
+        "text": "a\nb\na"
+      },
+      "example_output": "a\nb"
+    },
+    {
+      "name": "text.html_escape",
+      "version": "1.0.0",
+      "title": "转义 HTML",
+      "description": "Escape &, angle brackets and quotes for text/attribute embedding.",
+      "category": "text",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10000
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 128000
+      },
+      "example_input": {
+        "text": "<a title=\"x\">"
+      },
+      "example_output": "&lt;a title=&quot;x&quot;&gt;"
+    },
+    {
+      "name": "text.html_to_text",
+      "version": "1.0.0",
+      "title": "提取 HTML 正文",
+      "description": "Extract visible text from supplied HTML, suppressing script and style content; does not fetch resources.",
+      "category": "text",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10000
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 128000
+      },
+      "example_input": {
+        "text": "<p>Hello <b>world</b></p><script>alert(1)</script>"
+      },
+      "example_output": "Hello world"
+    },
+    {
+      "name": "text.html_unescape",
+      "version": "1.0.0",
+      "title": "还原 HTML 实体",
+      "description": "Decode named and numeric HTML character references.",
+      "category": "text",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10000
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 128000
+      },
+      "example_input": {
+        "text": "Tom &amp; Jerry &#33;"
+      },
+      "example_output": "Tom & Jerry !"
+    },
+    {
+      "name": "text.indent",
+      "version": "1.0.0",
+      "title": "缩进文本",
+      "description": "Prefix every nonempty line with a bounded number of spaces.",
+      "category": "text",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10000
+          },
+          "spaces": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 20
+          }
+        },
+        "required": [
+          "text",
+          "spaces"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 128000
+      },
+      "example_input": {
+        "text": "a\nb",
+        "spaces": 2
+      },
+      "example_output": "  a\n  b"
+    },
+    {
+      "name": "text.join",
+      "version": "1.0.0",
+      "title": "拼接文本",
+      "description": "Join supplied strings with a literal delimiter.",
+      "category": "text",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 1000
+            },
+            "minItems": 0,
+            "maxItems": 500
+          },
+          "delimiter": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 50
+          }
+        },
+        "required": [
+          "items",
+          "delimiter"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 128000
+      },
+      "example_input": {
+        "items": [
+          "red",
+          "blue"
+        ],
+        "delimiter": " | "
+      },
+      "example_output": "red | blue"
+    },
+    {
+      "name": "text.ngrams",
+      "version": "1.0.0",
+      "title": "生成词组",
+      "description": "Generate consecutive n-word windows from whitespace-delimited words; max 500 output windows.",
+      "category": "text",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 5000
+          },
+          "n": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10
+          }
+        },
+        "required": [
+          "text",
+          "n"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "array",
+        "items": {
+          "type": [
+            "object",
+            "array",
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
+          "maxProperties": 1000,
+          "maxItems": 1000,
+          "maxLength": 60000,
+          "minimum": -1e+100,
+          "maximum": 1e+100
+        },
+        "minItems": 0,
+        "maxItems": 10000
+      },
+      "example_input": {
+        "text": "new summer linen shirt",
+        "n": 2
+      },
+      "example_output": [
+        "new summer",
+        "summer linen",
+        "linen shirt"
+      ]
+    },
+    {
+      "name": "text.normalize_whitespace",
+      "version": "1.0.0",
+      "title": "规范空白",
+      "description": "Collapse Unicode whitespace into single spaces and trim ends.",
+      "category": "text",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10000
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 128000
+      },
+      "example_input": {
+        "text": "  hello\n world\t"
+      },
+      "example_output": "hello world"
+    },
+    {
+      "name": "text.remove_prefix_suffix",
+      "version": "1.0.0",
+      "title": "去除前后缀",
+      "description": "Remove one matching literal prefix and suffix; leave unmatched boundaries intact.",
+      "category": "text",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10000
+          },
+          "prefix": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 1000
+          },
+          "suffix": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "text",
+          "prefix",
+          "suffix"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 128000
+      },
+      "example_input": {
+        "text": "SKU-123.csv",
+        "prefix": "SKU-",
+        "suffix": ".csv"
+      },
+      "example_output": "123"
+    },
+    {
+      "name": "text.replace",
+      "version": "1.0.0",
+      "title": "替换字面文本",
+      "description": "Replace literal occurrences, with a bounded maximum replacement count.",
+      "category": "text",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10000
+          },
+          "old": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "new": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 1000
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000
+          }
+        },
+        "required": [
+          "text",
+          "old",
+          "new",
+          "count"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 128000
+      },
+      "example_input": {
+        "text": "red red red",
+        "old": "red",
+        "new": "blue",
+        "count": 2
+      },
+      "example_output": "blue blue red"
+    },
+    {
+      "name": "text.slug",
+      "version": "1.0.0",
+      "title": "生成 URL 短名",
+      "description": "Remove Latin accents, lowercase, and join Unicode alphanumeric segments with hyphens.",
+      "category": "text",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10000
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 128000
+      },
+      "example_input": {
+        "text": "Café Summer Sale!"
+      },
+      "example_output": "cafe-summer-sale"
+    },
+    {
+      "name": "text.sort_lines",
+      "version": "1.0.0",
+      "title": "排序文本行",
+      "description": "Sort lines lexicographically, optionally descending.",
+      "category": "text",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10000
+          },
+          "descending": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "text",
+          "descending"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 128000
+      },
+      "example_input": {
+        "text": "pear\napple\nbanana",
+        "descending": false
+      },
+      "example_output": "apple\nbanana\npear"
+    },
+    {
+      "name": "text.split",
+      "version": "1.0.0",
+      "title": "拆分文本",
+      "description": "Split on a nonempty literal delimiter, including empty fields.",
+      "category": "text",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10000
+          },
+          "delimiter": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50
+          },
+          "max_splits": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000
+          }
+        },
+        "required": [
+          "text",
+          "delimiter",
+          "max_splits"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "array",
+        "items": {
+          "type": [
+            "object",
+            "array",
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
+          "maxProperties": 1000,
+          "maxItems": 1000,
+          "maxLength": 60000,
+          "minimum": -1e+100,
+          "maximum": 1e+100
+        },
+        "minItems": 0,
+        "maxItems": 10000
+      },
+      "example_input": {
+        "text": "a,b,c",
+        "delimiter": ",",
+        "max_splits": 1
+      },
+      "example_output": [
+        "a",
+        "b,c"
+      ]
+    },
+    {
+      "name": "text.stats",
+      "version": "1.0.0",
+      "title": "文本统计",
+      "description": "Count Unicode characters, UTF-8 bytes, logical lines and non-whitespace characters.",
+      "category": "text",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10000
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "characters": {
+            "type": "number",
+            "minimum": -1e+100,
+            "maximum": 1e+100
+          },
+          "utf8_bytes": {
+            "type": "number",
+            "minimum": -1e+100,
+            "maximum": 1e+100
+          },
+          "lines": {
+            "type": "number",
+            "minimum": -1e+100,
+            "maximum": 1e+100
+          },
+          "non_whitespace": {
+            "type": "number",
+            "minimum": -1e+100,
+            "maximum": 1e+100
+          }
+        },
+        "required": [
+          "characters",
+          "utf8_bytes",
+          "lines",
+          "non_whitespace"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "example_input": {
+        "text": "Hi\n你"
+      },
+      "example_output": {
+        "characters": 4,
+        "utf8_bytes": 6,
+        "lines": 2,
+        "non_whitespace": 3
+      }
+    },
+    {
+      "name": "text.strip_accents",
+      "version": "1.0.0",
+      "title": "去除重音",
+      "description": "Remove combining marks after Unicode NFD normalization; preserves non-Latin characters.",
+      "category": "text",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10000
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 128000
+      },
+      "example_input": {
+        "text": "Café résumé"
+      },
+      "example_output": "Cafe resume"
+    },
+    {
+      "name": "text.tokenize",
+      "version": "1.0.0",
+      "title": "提取文本词项",
+      "description": "Return Unicode alphanumeric tokens in original order, discarding punctuation.",
+      "category": "text",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10000
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "array",
+        "items": {
+          "type": [
+            "object",
+            "array",
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
+          "maxProperties": 1000,
+          "maxItems": 1000,
+          "maxLength": 60000,
+          "minimum": -1e+100,
+          "maximum": 1e+100
+        },
+        "minItems": 0,
+        "maxItems": 10000
+      },
+      "example_input": {
+        "text": "Blue-shirt, size 42!"
+      },
+      "example_output": [
+        "Blue",
+        "shirt",
+        "size",
+        "42"
+      ]
+    },
+    {
+      "name": "text.truncate",
+      "version": "1.0.0",
+      "title": "截断文本",
+      "description": "Limit Unicode character count, counting the suffix inside the requested limit.",
+      "category": "text",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10000
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000
+          },
+          "suffix": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 20
+          }
+        },
+        "required": [
+          "text",
+          "limit",
+          "suffix"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 128000
+      },
+      "example_input": {
+        "text": "Summer collection",
+        "limit": 9,
+        "suffix": "..."
+      },
+      "example_output": "Summer..."
+    },
+    {
+      "name": "text.unicode_normalize",
+      "version": "1.0.0",
+      "title": "规范 Unicode",
+      "description": "Normalize text using one of the four standard Unicode normalization forms.",
+      "category": "text",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10000
+          },
+          "form": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 4,
+            "enum": [
+              "NFC",
+              "NFD",
+              "NFKC",
+              "NFKD"
+            ]
+          }
+        },
+        "required": [
+          "text",
+          "form"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 128000
+      },
+      "example_input": {
+        "text": "ＡＢＣ",
+        "form": "NFKC"
+      },
+      "example_output": "ABC"
+    },
+    {
+      "name": "text.word_count",
+      "version": "1.0.0",
+      "title": "统计词数",
+      "description": "Count Unicode letter/number words using fixed token boundaries.",
+      "category": "text",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10000
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "number",
+        "minimum": -1e+100,
+        "maximum": 1e+100
+      },
+      "example_input": {
+        "text": "Hello, world! 42"
+      },
+      "example_output": 3
+    },
+    {
+      "name": "text.wrap",
+      "version": "1.0.0",
+      "title": "文本折行",
+      "description": "Wrap paragraphs to a bounded width using standard whitespace wrapping.",
+      "category": "text",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10000
+          },
+          "width": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          }
+        },
+        "required": [
+          "text",
+          "width"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 128000
+      },
+      "example_input": {
+        "text": "one two three four",
+        "width": 7
+      },
+      "example_output": "one two\nthree\nfour"
+    },
+    {
+      "name": "units.area",
+      "version": "1.0.0",
+      "title": "面积单位换算",
+      "description": "Convert area using explicit base-unit factors; numeric result uses IEEE floating-point.",
+      "category": "units",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1000000000000.0
+          },
+          "from_unit": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10,
+            "enum": [
+              "mm2",
+              "cm2",
+              "m2",
+              "km2",
+              "ha",
+              "acre",
+              "ft2"
+            ]
+          },
+          "to_unit": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10,
+            "enum": [
+              "mm2",
+              "cm2",
+              "m2",
+              "km2",
+              "ha",
+              "acre",
+              "ft2"
+            ]
+          }
+        },
+        "required": [
+          "value",
+          "from_unit",
+          "to_unit"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "number",
+        "minimum": -1e+100,
+        "maximum": 1e+100
+      },
+      "example_input": {
+        "value": 1,
+        "from_unit": "ha",
+        "to_unit": "m2"
+      },
+      "example_output": 10000.0
+    },
+    {
+      "name": "units.duration",
+      "version": "1.0.0",
+      "title": "时长单位换算",
+      "description": "Convert duration using explicit base-unit factors; numeric result uses IEEE floating-point.",
+      "category": "units",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1000000000000.0
+          },
+          "from_unit": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10,
+            "enum": [
+              "ms",
+              "s",
+              "min",
+              "h",
+              "day",
+              "week"
+            ]
+          },
+          "to_unit": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10,
+            "enum": [
+              "ms",
+              "s",
+              "min",
+              "h",
+              "day",
+              "week"
+            ]
+          }
+        },
+        "required": [
+          "value",
+          "from_unit",
+          "to_unit"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "number",
+        "minimum": -1e+100,
+        "maximum": 1e+100
+      },
+      "example_input": {
+        "value": 2,
+        "from_unit": "h",
+        "to_unit": "min"
+      },
+      "example_output": 120.0
+    },
+    {
+      "name": "units.length",
+      "version": "1.0.0",
+      "title": "长度单位换算",
+      "description": "Convert length using explicit base-unit factors; numeric result uses IEEE floating-point.",
+      "category": "units",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1000000000000.0
+          },
+          "from_unit": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10,
+            "enum": [
+              "mm",
+              "cm",
+              "m",
+              "km",
+              "in",
+              "ft",
+              "yd",
+              "mi"
+            ]
+          },
+          "to_unit": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10,
+            "enum": [
+              "mm",
+              "cm",
+              "m",
+              "km",
+              "in",
+              "ft",
+              "yd",
+              "mi"
+            ]
+          }
+        },
+        "required": [
+          "value",
+          "from_unit",
+          "to_unit"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "number",
+        "minimum": -1e+100,
+        "maximum": 1e+100
+      },
+      "example_input": {
+        "value": 1,
+        "from_unit": "m",
+        "to_unit": "cm"
+      },
+      "example_output": 100.0
+    },
+    {
+      "name": "units.mass",
+      "version": "1.0.0",
+      "title": "质量单位换算",
+      "description": "Convert mass using explicit base-unit factors; numeric result uses IEEE floating-point.",
+      "category": "units",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1000000000000.0
+          },
+          "from_unit": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10,
+            "enum": [
+              "mg",
+              "g",
+              "kg",
+              "t",
+              "oz",
+              "lb"
+            ]
+          },
+          "to_unit": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10,
+            "enum": [
+              "mg",
+              "g",
+              "kg",
+              "t",
+              "oz",
+              "lb"
+            ]
+          }
+        },
+        "required": [
+          "value",
+          "from_unit",
+          "to_unit"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "number",
+        "minimum": -1e+100,
+        "maximum": 1e+100
+      },
+      "example_input": {
+        "value": 1,
+        "from_unit": "kg",
+        "to_unit": "g"
+      },
+      "example_output": 1000.0
+    },
+    {
+      "name": "units.speed",
+      "version": "1.0.0",
+      "title": "速度单位换算",
+      "description": "Convert speed using explicit base-unit factors; numeric result uses IEEE floating-point.",
+      "category": "units",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1000000000000.0
+          },
+          "from_unit": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10,
+            "enum": [
+              "m/s",
+              "km/h",
+              "mph",
+              "knot"
+            ]
+          },
+          "to_unit": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10,
+            "enum": [
+              "m/s",
+              "km/h",
+              "mph",
+              "knot"
+            ]
+          }
+        },
+        "required": [
+          "value",
+          "from_unit",
+          "to_unit"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "number",
+        "minimum": -1e+100,
+        "maximum": 1e+100
+      },
+      "example_input": {
+        "value": 36,
+        "from_unit": "km/h",
+        "to_unit": "m/s"
+      },
+      "example_output": 10.0
+    },
+    {
+      "name": "units.storage",
+      "version": "1.0.0",
+      "title": "数字存储容量单位换算",
+      "description": "Convert storage using explicit base-unit factors; numeric result uses IEEE floating-point.",
+      "category": "units",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1000000000000.0
+          },
+          "from_unit": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10,
+            "enum": [
+              "B",
+              "KB",
+              "MB",
+              "GB",
+              "KiB",
+              "MiB",
+              "GiB"
+            ]
+          },
+          "to_unit": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10,
+            "enum": [
+              "B",
+              "KB",
+              "MB",
+              "GB",
+              "KiB",
+              "MiB",
+              "GiB"
+            ]
+          }
+        },
+        "required": [
+          "value",
+          "from_unit",
+          "to_unit"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "number",
+        "minimum": -1e+100,
+        "maximum": 1e+100
+      },
+      "example_input": {
+        "value": 1,
+        "from_unit": "MiB",
+        "to_unit": "KiB"
+      },
+      "example_output": 1024.0
+    },
+    {
+      "name": "units.temperature",
+      "version": "1.0.0",
+      "title": "温度单位换算",
+      "description": "Convert Celsius, Fahrenheit and Kelvin; reject temperatures below absolute zero.",
+      "category": "units",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "number",
+            "minimum": -1000,
+            "maximum": 1000000000.0
+          },
+          "from_unit": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 1,
+            "enum": [
+              "C",
+              "F",
+              "K"
+            ]
+          },
+          "to_unit": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 1,
+            "enum": [
+              "C",
+              "F",
+              "K"
+            ]
+          }
+        },
+        "required": [
+          "value",
+          "from_unit",
+          "to_unit"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "number",
+        "minimum": -1e+100,
+        "maximum": 1e+100
+      },
+      "example_input": {
+        "value": 100,
+        "from_unit": "C",
+        "to_unit": "F"
+      },
+      "example_output": 212.0
+    },
+    {
+      "name": "units.volume",
+      "version": "1.0.0",
+      "title": "体积单位换算",
+      "description": "Convert volume using explicit base-unit factors; numeric result uses IEEE floating-point.",
+      "category": "units",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1000000000000.0
+          },
+          "from_unit": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10,
+            "enum": [
+              "ml",
+              "l",
+              "m3",
+              "us_gal",
+              "us_fl_oz"
+            ]
+          },
+          "to_unit": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10,
+            "enum": [
+              "ml",
+              "l",
+              "m3",
+              "us_gal",
+              "us_fl_oz"
+            ]
+          }
+        },
+        "required": [
+          "value",
+          "from_unit",
+          "to_unit"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "number",
+        "minimum": -1e+100,
+        "maximum": 1e+100
+      },
+      "example_input": {
+        "value": 2,
+        "from_unit": "l",
+        "to_unit": "ml"
+      },
+      "example_output": 2000.0
+    },
+    {
+      "name": "validation.duplicates",
+      "version": "1.0.0",
+      "title": "查找重复数据",
+      "description": "Report repeated JSON values and counts in first-appearance order, with object keys compared order-independently.",
+      "category": "validation",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "values": {
+            "type": "array",
+            "items": {
+              "type": [
+                "object",
+                "array",
+                "string",
+                "number",
+                "boolean",
+                "null"
+              ],
+              "maxProperties": 1000,
+              "maxItems": 1000,
+              "maxLength": 60000,
+              "minimum": -1e+100,
+              "maximum": 1e+100
+            },
+            "minItems": 0,
+            "maxItems": 500
+          }
+        },
+        "required": [
+          "values"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "array",
+        "items": {
+          "type": [
+            "object",
+            "array",
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
+          "maxProperties": 1000,
+          "maxItems": 1000,
+          "maxLength": 60000,
+          "minimum": -1e+100,
+          "maximum": 1e+100
+        },
+        "minItems": 0,
+        "maxItems": 10000
+      },
+      "example_input": {
+        "values": [
+          "A",
+          "B",
+          "A",
+          "C",
+          "B"
+        ]
+      },
+      "example_output": [
+        {
+          "value": "A",
+          "count": 2
+        },
+        {
+          "value": "B",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "name": "validation.ean13",
+      "version": "1.0.0",
+      "title": "EAN-13 条码校验",
+      "description": "Validate exactly 13 ASCII digits and the EAN-13 check digit; does not confirm product registration.",
+      "category": "validation",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 32
+          }
+        },
+        "required": [
+          "value"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "boolean"
+      },
+      "example_input": {
+        "value": "4006381333931"
+      },
+      "example_output": true
+    },
+    {
+      "name": "validation.email",
+      "version": "1.0.0",
+      "title": "检查邮箱语法",
+      "description": "Validate common unquoted ASCII email syntax and domain labels; does not establish mailbox existence.",
+      "category": "validation",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 320
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "boolean"
+      },
+      "example_input": {
+        "email": "buyer+tag@example.com"
+      },
+      "example_output": true
+    },
+    {
+      "name": "validation.http_url",
+      "version": "1.0.0",
+      "title": "检查 HTTP URL",
+      "description": "Check basic http/https URL structure, hostname presence, port and absence of credentials/control/whitespace; not an SSRF policy.",
+      "category": "validation",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 8000
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "boolean"
+      },
+      "example_input": {
+        "url": "https://shop.example/products?q=shirt"
+      },
+      "example_output": true
+    },
+    {
+      "name": "validation.ip_address",
+      "version": "1.0.0",
+      "title": "检查 IP 地址",
+      "description": "Validate a literal IPv4 or IPv6 address of the requested version without DNS lookup.",
+      "category": "validation",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 100
+          },
+          "version": {
+            "type": "integer",
+            "enum": [
+              4,
+              6
+            ]
+          }
+        },
+        "required": [
+          "value",
+          "version"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "boolean"
+      },
+      "example_input": {
+        "value": "192.168.1.1",
+        "version": 4
+      },
+      "example_output": true
+    },
+    {
+      "name": "validation.iso_date",
+      "version": "1.0.0",
+      "title": "检查日期有效性",
+      "description": "Check exact YYYY-MM-DD syntax and actual Gregorian calendar validity.",
+      "category": "validation",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 50
+          }
+        },
+        "required": [
+          "date"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "boolean"
+      },
+      "example_input": {
+        "date": "2023-02-29"
+      },
+      "example_output": false
+    },
+    {
+      "name": "validation.luhn",
+      "version": "1.0.0",
+      "title": "Luhn 校验",
+      "description": "Check a supplied 2–32 digit identifier with the Luhn checksum; does not validate an account or authorize a payment.",
+      "category": "validation",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 32
+          }
+        },
+        "required": [
+          "value"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "boolean"
+      },
+      "example_input": {
+        "value": "79927398713"
+      },
+      "example_output": true
+    },
+    {
+      "name": "validation.numeric_range",
+      "version": "1.0.0",
+      "title": "检查数值区间",
+      "description": "Return zero-based indices and values outside a caller-supplied inclusive interval; inverted bounds are rejected.",
+      "category": "validation",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "minimum": -1000000000000.0,
+              "maximum": 1000000000000.0
+            },
+            "minItems": 1,
+            "maxItems": 1000
+          },
+          "minimum": {
+            "type": "number",
+            "minimum": -1000000000000.0,
+            "maximum": 1000000000000.0
+          },
+          "maximum": {
+            "type": "number",
+            "minimum": -1000000000000.0,
+            "maximum": 1000000000000.0
+          }
+        },
+        "required": [
+          "values",
+          "minimum",
+          "maximum"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "array",
+        "items": {
+          "type": [
+            "object",
+            "array",
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
+          "maxProperties": 1000,
+          "maxItems": 1000,
+          "maxLength": 60000,
+          "minimum": -1e+100,
+          "maximum": 1e+100
+        },
+        "minItems": 0,
+        "maxItems": 10000
+      },
+      "example_input": {
+        "values": [
+          -1,
+          0,
+          5,
+          11
+        ],
+        "minimum": 0,
+        "maximum": 10
+      },
+      "example_output": [
+        {
+          "index": 0,
+          "value": -1
+        },
+        {
+          "index": 3,
+          "value": 11
+        }
+      ]
+    },
+    {
+      "name": "validation.required_fields",
+      "version": "1.0.0",
+      "title": "检查记录必填字段",
+      "description": "Report 1-based rows missing required keys or containing null/empty-string values; zero and false remain valid.",
+      "category": "validation",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "records": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {},
+              "required": [],
+              "additionalProperties": {
+                "type": [
+                  "object",
+                  "array",
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ],
+                "maxProperties": 1000,
+                "maxItems": 1000,
+                "maxLength": 60000,
+                "minimum": -1e+100,
+                "maximum": 1e+100
+              },
+              "maxProperties": 1000
+            },
+            "minItems": 0,
+            "maxItems": 500
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "minItems": 0,
+            "maxItems": 100
+          }
+        },
+        "required": [
+          "records",
+          "fields"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "array",
+        "items": {
+          "type": [
+            "object",
+            "array",
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
+          "maxProperties": 1000,
+          "maxItems": 1000,
+          "maxLength": 60000,
+          "minimum": -1e+100,
+          "maximum": 1e+100
+        },
+        "minItems": 0,
+        "maxItems": 10000
+      },
+      "example_input": {
+        "records": [
+          {
+            "sku": "A",
+            "price": 0
+          },
+          {
+            "sku": ""
+          }
+        ],
+        "fields": [
+          "sku",
+          "price"
+        ]
+      },
+      "example_output": [
+        {
+          "row": 2,
+          "missing": [
+            "sku",
+            "price"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "validation.uuid",
+      "version": "1.0.0",
+      "title": "检查 UUID",
+      "description": "Validate canonical hyphenated UUID syntax, case-insensitively; does not require a particular UUID version.",
+      "category": "validation",
+      "effects": "pure",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 100
+          }
+        },
+        "required": [
+          "value"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 1000
+      },
+      "output_schema": {
+        "type": "boolean"
+      },
+      "example_input": {
+        "value": "886313e1-3b8a-5372-9b90-0c9aee199e5d"
+      },
+      "example_output": true
+    }
+  ]
+}
