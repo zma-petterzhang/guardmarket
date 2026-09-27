@@ -1,11 +1,12 @@
 # GuardMarket
 
-> Public MCP thin client and documentation for 125 commerce/data skills. A running, separately operated backend is required. No hosted endpoint, PyPI listing, directory approval or indexing guarantee is implied.
+> Public MCP thin client and documentation for 125 commerce/data skills. A running, separately operated backend is required. Version 0.3.0 is released and registered as active in the MCP Registry. No hosted endpoint, PyPI listing, OpenAI/Claude plugin approval or indexing guarantee is implied.
 
 ## Integration
 
 - [Client installation](https://zma-petterzhang.github.io/guardmarket/connect.html): Python 3.11+ stdio MCP client and supported configurations.
-- [Source and release](https://github.com/zma-petterzhang/guardmarket): MIT client; no private billing server or account data.
+- [Source and release](https://github.com/zma-petterzhang/guardmarket): Published v0.3.0 MIT client; no private billing server or account data.
+- [MCP Registry record](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.zma-petterzhang%2Fguardmarket/versions/0.3.0): Active 0.3.0 MCPB installation metadata. This is separate from OpenAI/Claude plugin-directory review.
 - [Machine-readable catalog](https://zma-petterzhang.github.io/guardmarket/catalog.json): Versioned schemas and fixed example input/output, not live execution responses.
 - [Worked examples](https://zma-petterzhang.github.io/guardmarket/use-cases.html): Cart, CSV and inventory scenarios.
 

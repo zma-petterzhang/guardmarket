@@ -2,11 +2,13 @@
 
 <!-- mcp-name: io.github.zma-petterzhang/guardmarket -->
 
-[中文](README.zh-CN.md) · [125-skill catalog](https://zma-petterzhang.github.io/guardmarket/) · [Releases](https://github.com/zma-petterzhang/guardmarket/releases) · [Integration examples](examples/README.md)
+[中文](README.zh-CN.md) · [125-skill catalog](https://zma-petterzhang.github.io/guardmarket/) · [Releases](https://github.com/zma-petterzhang/guardmarket/releases) · [MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.zma-petterzhang%2Fguardmarket/versions/0.3.0) · [Integration examples](examples/README.md)
 
 GuardMarket gives MCP clients five tools to discover versioned skills, inspect their schemas and prices, invoke with an explicit spending cap, and read wallet balances and receipts. The catalog describes **125 implemented commerce, inventory, CSV, JSON, text, date, math, statistics, encoding, validation, and unit-conversion skills**.
 
-**This repository is the public client and documentation.** Skill execution, accounts, and billing run in a separately operated GuardMarket backend. Installing this client does not create a backend or a wallet. No public production MCP endpoint, PyPI listing, or official directory approval is claimed. The static website is documentation, not an execution endpoint. The bundled examples are synthetic and contain no account data.
+**Version 0.3.0 is published:** the public repository, [release installation files](https://github.com/zma-petterzhang/guardmarket/releases/tag/v0.3.0), and [130-page documentation site](https://zma-petterzhang.github.io/guardmarket/) are available. The MCPB has an **active [MCP Registry record](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.zma-petterzhang%2Fguardmarket/versions/0.3.0)** under `io.github.zma-petterzhang/guardmarket`, published on 2026-09-26. This is package metadata registration; OpenAI and Claude plugin-directory approval are separate steps.
+
+**This repository is the public client and documentation.** Skill execution, accounts, and billing run in a separately operated GuardMarket backend. Installing this client does not create a backend or a wallet. A public production MCP endpoint and PyPI listing are not yet provided. The static website is documentation, not an execution endpoint. The bundled examples are synthetic and contain no account data.
 
 ## Install and connect
 
@@ -63,6 +65,6 @@ python scripts/build_mcpb.py
 
 CI validates Python 3.11–3.13, regenerates the static site, and builds the wheel and MCPB. Pushing a `v*` tag creates a GitHub release with a wheel, source archive, desktop MCPB bundle, and SHA-256 checksums; it does not publish to PyPI or any AI vendor directory. The MCPB builder uses an explicit allowlist and deterministic ZIP metadata, and prints its `fileSha256` for registry preparation. GitHub Pages serves `docs/` using its deployment workflow. Public catalog metadata is a versioned snapshot; the chosen backend remains authoritative at invocation time.
 
-A separate manual GitHub Actions workflow prepares and publishes the released MCPB's metadata to the MCP Registry using GitHub OIDC. It verifies the release artifact and its checksum first. A successful registry receipt is required before claiming registration; MCP Registry publication is separate from OpenAI or Claude plugin-directory review.
+A separate manual GitHub Actions workflow prepares and publishes the released MCPB's metadata to the MCP Registry using GitHub OIDC. It verifies the release artifact and its checksum first. The [v0.3.0 registration run succeeded](https://github.com/zma-petterzhang/guardmarket/actions/runs/36233530790), and its [registry record is active](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.zma-petterzhang%2Fguardmarket/versions/0.3.0). The record points to the immutable v0.3.0 release artifact; documentation updates on `main` do not replace that artifact. MCP Registry publication is separate from OpenAI or Claude plugin-directory review.
 
 [Security](SECURITY.md) · [Privacy and data handling](https://zma-petterzhang.github.io/guardmarket/privacy.html) · [Client terms](https://zma-petterzhang.github.io/guardmarket/terms.html)

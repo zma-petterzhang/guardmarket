@@ -1,8 +1,10 @@
 # GuardMarket：供 AI 调用的电商与数据技能
 
-[English](README.md) · [125 个技能文档](https://zma-petterzhang.github.io/guardmarket/) · [安装包](https://github.com/zma-petterzhang/guardmarket/releases) · [各客户端配置](examples/README.md)
+[English](README.md) · [125 个技能文档](https://zma-petterzhang.github.io/guardmarket/) · [安装包](https://github.com/zma-petterzhang/guardmarket/releases) · [MCP Registry 登记](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.zma-petterzhang%2Fguardmarket/versions/0.3.0) · [各客户端配置](examples/README.md)
 
 本仓库提供独立 MCP 客户端、插件描述文件和 125 个真实实现技能的公开参数文档。技能覆盖电商计算、库存分析、CSV、JSON、文本、日期、数学、统计、编码、数据校验和单位换算。
+
+**v0.3.0 已正式公开发布：**仓库、[安装包](https://github.com/zma-petterzhang/guardmarket/releases/tag/v0.3.0)和 130 页文档站均可访问。MCPB 安装包已于 2026-09-26 登记到 [MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.zma-petterzhang%2Fguardmarket/versions/0.3.0)，名称为 `io.github.zma-petterzhang/guardmarket`，当前状态为 `active`。这是安装包元数据登记；OpenAI、Claude 的插件目录审核仍需单独完成。
 
 **执行服务、账号和计费由单独运行的 GuardMarket 后台提供。** 安装这个包不会自动获得服务器或钱包。公开文档站不能执行技能；这里也不宣称已发布 PyPI、已部署公网生产服务或已获得 GPT / Claude 目录审核。示例全部使用合成数据，不包含本机账号。
 
@@ -47,6 +49,8 @@ python3 -m venv .venv
 
 [接入指南](examples/README.md) 包含 Claude Desktop / Code、Qwen Code / Agent、Codex 配置，以及便携插件和兼容描述文件。ChatGPT 或 Claude 网页端还需要公网 HTTPS MCP 服务及授权配置，不能把 GitHub 仓库网址当成执行接口。
 
-公开仓库、独立技能页、站点地图和 `llms.txt` 可以提供可检索内容；它们不保证平台收录、自动推荐或自动安装。官方目录还需要真实运行的服务、发布者验证和平台审核。
+公开仓库、独立技能页、站点地图和 `llms.txt` 可以提供可检索内容；MCP Registry 的有效记录让支持该注册表的工具目录可以获取安装信息。它们不保证搜索引擎收录、模型自动推荐或自动安装。OpenAI、Claude 插件目录还需要各自的发布者验证与平台审核。
+
+[Registry 发布工作流已成功](https://github.com/zma-petterzhang/guardmarket/actions/runs/36233530790)，登记指向固定的 v0.3.0 安装包与校验和。后续 `main` 分支的文档更新不会替换已发布版本。
 
 开发验证命令、发版流程和技术限制见 [English README](README.md)。

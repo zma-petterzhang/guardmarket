@@ -205,4 +205,3 @@ def _check_schema(schema: dict, depth: int = 0) -> None:
         _check_schema(additional, depth + 1)
     elif type(additional) is not bool:
         raise ValueError("invalid_additional_properties")
-
